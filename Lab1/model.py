@@ -1,12 +1,10 @@
 import torch
 import torch.nn as nn
-import matplotlib.pyplot as plt
-from torchvision import transforms
 import torch.nn.functional as F
 
 class autoencoderMLP4Layer(nn.Module):
 
-  def __init__(self, N_input=784,  N_bottleneck=8, N_output=784):
+  def __init__(self, N_input=784, N_bottleneck=8, N_output=784):
     super(autoencoderMLP4Layer, self).__init__()
     N2 = 392
     self.fc1 = nn.Linear(N_input, N2)
@@ -16,17 +14,19 @@ class autoencoderMLP4Layer(nn.Module):
     self.type = 'MLP4'
     self.input_shape = (1,28*28)
 
-  def forward(self, X):
-    #forward
+  def encode(self, X):
     X = self.fc1(X)
     X = F.relu(X)
     X = self.fc2(X)
     X = F.relu(X)
+    return X
 
-    #decode
+  def decode(self, X):
     X = self.fc3(X)
     X = F.relu(X)
     X = self.fc4(X)
     X = torch.sigmoid(X)
-
     return X
+
+  def forward(self, X):
+    return self.decode(self.encode(X))
