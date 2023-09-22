@@ -5,6 +5,13 @@ import torch.nn.functional as F
 class autoencoderMLP4Layer(nn.Module):
 
   def __init__(self, N_input=784, N_bottleneck=8, N_output=784):
+    """
+    Initialize the autoencoder
+
+    N_input (int): Optional
+    N_bottleneck (int): Optional
+    N_output (int): Optional
+    """
     super(autoencoderMLP4Layer, self).__init__()
     N2 = 392
     self.fc1 = nn.Linear(N_input, N2)

@@ -3,10 +3,16 @@ from torchvision import transforms
 from torchvision.datasets import MNIST
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
+import argparse
 from model import autoencoderMLP4Layer
 
 # Step 4
 def reconstructed_plot(loader):
+    """
+    Displays figure of original MNIST image, in comparison to reconstructed image from PyTorch model.
+
+    loader (torch.utils.data.DataLoader): DataLoader for MNIST images
+    """
     imgs, _ = next(iter(loader))
 
     with torch.no_grad():
@@ -21,10 +27,17 @@ def reconstructed_plot(loader):
             plt.imshow(img, cmap='gray')
             f.add_subplot(1, 2, 2)
             plt.imshow(output, cmap='gray')
-            plt.show()
+            plt.show(block=False)
+            plt.waitforbuttonpress()
+            plt.close()
 
 # Step 5
 def noisy_reconstructed_plot(loader, noise_factor=0.25):
+    """
+    Similar to previous function, with added parameter to incorporate noise. Default is 25%. 
+
+    loader (torch.utils.data.DataLoader): DataLoader for MNIST images.
+    """
     imgs, _ = next(iter(loader))
 
     with torch.no_grad():
@@ -46,10 +59,19 @@ def noisy_reconstructed_plot(loader, noise_factor=0.25):
                 axes[i, j].imshow(image, cmap='gray')
 
         plt.tight_layout()
-        plt.show()
+        plt.show(block=False)
+        plt.waitforbuttonpress()
+        plt.close()
 
 # Step 6
 def bottleneck_interpolations(img1, img2, n_steps=8):
+    """
+    Displays interpolations of the bottleneck of two MNIST images.
+
+    img1 (torch.Tensor): tensor of first image
+    img2 (torch.Tensor): tensor of second image
+    n_steps (int): Optional. number of interpolations.
+    """
     with torch.no_grad():
         img1_bottleneck = model.encode(img1.view(1, 784).type(torch.float32))
         img2_bottleneck = model.encode(img2.view(1, 784).type(torch.float32))
@@ -78,15 +100,18 @@ if __name__ == "__main__":
     # plt.imshow(train_set.data[idx], cmap='gray')
     # plt.title("Ground Truth: {}".format(train_set.targets[idx]))
     # plt.show()
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    parser = argparse.ArgumentParser(description="MNIST Autoencoder")
+    parser.add_argument('-l', '--load_model', type=str, default="MLP.8.pth", help="Load model")
+    args = parser.parse_args()
     
     test_transform = transforms.Compose([transforms.ToTensor()])
     test_set = MNIST('./data/mnist', train=False, download=True, transform=test_transform)
-    test_loader = DataLoader(test_set, batch_size=3, shuffle=False) # batch size of 3 is used here for visualization purposes
+    test_loader = DataLoader(test_set, batch_size=3, shuffle=False) # batch size of 3 is used here for demonstration (rather than reconstructing each MNIST image in the dataset)
 
     model = autoencoderMLP4Layer(N_input=784, N_bottleneck=8, N_output=784)
-    model.load_state_dict(torch.load('MLP.8.pth', map_location=torch.device(device)))
+    model.load_state_dict(torch.load(args.load_model, map_location=torch.device(device)))
     model.eval()
 
     reconstructed_plot(test_loader)

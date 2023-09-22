@@ -1,15 +1,24 @@
 import torch
+from torch.utils.data import DataLoader
+from torchvision import transforms
+from torchvision.datasets import MNIST
 import matplotlib.pyplot as plt
 import datetime
 import argparse
 from model import autoencoderMLP4Layer
-from torchvision import transforms
-from torchvision.datasets import MNIST
-from torch.utils.data import DataLoader
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def train(n_epochs, optimizer, model, loss_fn, train_loader, scheduler, device):
+    """
+    Trains model from model.py on MNIST dataset. Returns training losses.
+
+    n_epochs (int): Number of Epochs
+    optimizer (torch.optim): Optimizer, Adam is recommended
+    model (torch.nn): PyTorch model
+    loss_fn: record loss during training 
+    train_loader (torch.utils.data.DataLoader): PyTorch Dataloader
+    scheduler (): PyTorch scheduler. StepLR is recommended.
+    device (torch.device): Processing Unit. CUDA GPU is recommended.
+    """
     print('training...')
     model.to(device=device)
     model.train()
@@ -36,6 +45,12 @@ def train(n_epochs, optimizer, model, loss_fn, train_loader, scheduler, device):
     return losses_train
 
 def loss_plot(losses_train, save_path):
+    """
+    Plots losses from training vs epochs. Returns saved plot.
+
+    losses_train (list): training losses
+    save_path: Local path for plot
+    """
     plt.plot(losses_train)
     plt.xlabel("epochs")
     plt.ylabel("loss")
@@ -44,12 +59,14 @@ def loss_plot(losses_train, save_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="MNIST Autoencoder")
-    parser.add_argument('-e', '--epochs', type=int, default=50, help="Epochs")
     parser.add_argument('-z', '--bottleneck', type=int, default=8, help="Bottleneck size")
+    parser.add_argument('-e', '--epochs', type=int, default=50, help="Epochs")
     parser.add_argument('-b', '--batch_size', type=int, default=2048, help="Batch size")
     parser.add_argument('-s', '--save_model', type=str, default="MLP.8.pth", help="Save model")
     parser.add_argument('-p', '--loss_plot', type=str, default="loss.MLP.8.png", help="Save loss plot")
     args = parser.parse_args()
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     model = autoencoderMLP4Layer(N_input=784, N_bottleneck=args.bottleneck, N_output=784)
     model.to(device=device)
