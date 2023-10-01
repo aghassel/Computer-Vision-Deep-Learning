@@ -64,6 +64,6 @@ if __name__ == '__main__':
 	save_file = out_dir + opt.content_image[opt.content_image.rfind('/')+1: opt.content_image.find('.')] \
 							+"_style_"+ opt.style_image[opt.style_image.rfind('/')+1: opt.style_image.find('.')] \
 							+ "_alpha_" + str(alpha) \
-							+ "_10k_decoder" + output_format 
+							+ "_1k_decoder" + output_format 
 	print('saving output file: ', save_file)
 	save_image(out_tensor, save_file)
