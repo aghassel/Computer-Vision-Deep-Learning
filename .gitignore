@@ -1,4 +1,5 @@
 .vscode
+.conda
 /data/
 /Lab1/data/
 /Lab2/src/datasets/

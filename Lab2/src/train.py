@@ -46,7 +46,6 @@ class FlatFolderDataset(data.Dataset):
     def name(self):
         return 'FlatFolderDataset'
 
-
 def adjust_learning_rate(optimizer, iteration_count):
     """Imitating the original implementation"""
     lr = args.lr / (1.0 + args.lr_decay * iteration_count)
@@ -79,7 +78,7 @@ if __name__ == '__main__':
     parser.add_argument('--content_weight', type=float, default=1.0)
     parser.add_argument('--n_threads', type=int, default=2)
 
-    parser.add_argument('-gamma', type=float, help='lamda')
+    parser.add_argument('-gamma', type=float, help='lamda used in Eq. 11')
     parser.add_argument('-e', type=int, help='Number of epochs')
     parser.add_argument('-b', type=int, help='Batch size')
     parser.add_argument('-l', type=str, help='load encoder')
@@ -135,8 +134,8 @@ if __name__ == '__main__':
             optimizer.zero_grad()
             
             loss_c, loss_s = network(content_images, style_images)
-            loss_c *= args.content_weight
-            loss_s *= args.style_weight
+            # loss_c *= args.content_weight #Default is 1
+            # loss_s *= args.style_weight #Default is 10, to ensure generated image reflects more of the style than content
             # Eq. (11)
             loss = loss_c + args.gamma*loss_s
             
