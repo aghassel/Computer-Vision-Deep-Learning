@@ -8,6 +8,7 @@ import torch.backends.cudnn as cudnn
 import torch.nn as nn
 import torch.utils.data as data
 from PIL import Image, ImageFile
+import os
 from torchvision import transforms
 import AdaIN_net as net
 
@@ -17,6 +18,8 @@ cudnn.benchmark = True
 Image.MAX_IMAGE_PIXELS = None  # Disable DecompressionBombError
 # Disable OSError: image file is truncated
 ImageFile.LOAD_TRUNCATED_IMAGES = True
+
+os.environ["USE_OPENMP"] = "1"
 
 
 def train_transform():
@@ -87,6 +90,8 @@ if __name__ == '__main__':
     parser.add_argument('-cuda', type=str, help='cuda', default='Y')
     args = parser.parse_args()
 
+    print("Args:", args)
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     encoder = net.encoder_decoder.encoder
@@ -101,6 +106,18 @@ if __name__ == '__main__':
     content_dataset = FlatFolderDataset(args.content_dir, content_tf)
     style_dataset = FlatFolderDataset(args.style_dir, style_tf)
 
+    num_images = 1000
+
+    content_dataset = torch.utils.data.Subset(content_dataset, list(range(num_images)))
+    style_dataset = torch.utils.data.Subset(style_dataset, list(range(num_images)))
+
+    first_content_image = content_dataset[0]
+    print("First content image shape: ", first_content_image.shape)
+
+    first_style_image = style_dataset[0]
+    print("First style image shape: ", first_style_image.shape)
+
+   
     # content_iter = iter(data.DataLoader(
     #     content_dataset, batch_size=args.b,
     #     sampler=InfiniteSamplerWrapper(content_dataset),
@@ -122,15 +139,22 @@ if __name__ == '__main__':
     avg_total_losses = []
 
     optimizer = torch.optim.Adam(network.decoder.parameters(), lr=args.lr)
+    print("Content length: ", len(content_dataset))
+    print("Style length: ", len(style_dataset))
+    print("Batch size: ", args.b)
 
     for epoch in range(args.e):
         adjust_learning_rate(optimizer, iteration_count=epoch)
         print(f"Epoch {epoch + 1}/{args.e}")
-    
+        epoch_content_loss = 0
+        epoch_style_loss = 0
+        epoch_total_loss = 0
+
         for batch_idx, (content_images, style_images) in enumerate(zip(content_loader, style_loader)):
+            #print("Count: ", batch_idx)
             content_images = content_images.to(device)
             style_images = style_images.to(device)
-            
+
             optimizer.zero_grad()
             
             loss_c, loss_s = network(content_images, style_images)
@@ -145,6 +169,13 @@ if __name__ == '__main__':
             content_losses.append(loss_c.item())
             style_losses.append(loss_s.item())
             total_losses.append(loss.item())
+
+            epoch_content_loss += loss_c.item()
+            epoch_style_loss += loss_s.item()
+            epoch_total_loss += loss.item()
+
+            if batch_idx % 100 == 0:
+                print(f"\tIteration: {batch_idx}\nContent Loss: {epoch_content_loss}\nStyle Loss: {epoch_style_loss}\nTotal Loss: {epoch_total_loss}\n")
             
         avg_content_loss = sum(content_losses[-len(content_loader):]) / len(content_loader)
         avg_style_loss = sum(style_losses[-len(style_loader):]) / len(style_loader)
@@ -154,7 +185,7 @@ if __name__ == '__main__':
         avg_style_losses.append(avg_style_loss)
         avg_total_losses.append(avg_total_loss)
 
-        print(f"Content Loss: {avg_content_loss:.2f}, Style Loss: {avg_style_loss:.2f}, Total Loss: {avg_total_loss:.2f}")
+        print(f"Content Loss: {avg_content_loss:.2f}, Style Loss: {avg_style_loss:.2f}, Total Loss: {avg_total_loss:.2f}\nIterations: {count}\n")
 
         torch.save(net.encoder_decoder.decoder.state_dict(), args.s) 
     
