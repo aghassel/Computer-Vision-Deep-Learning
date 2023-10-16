@@ -1,7 +1,0 @@
-Args: Namespace(content_dir='/ingenuity_NAS/dataset/public/coco/images/train2017', style_dir='/ingenuity_NAS/dataset/public/wikiart/images', lr=0.0001, lr_decay=5e-05, style_weight=10.0, content_weight=1.0, n_threads=1, gamma=15.0, e=20, b=10, l='encoder.pth', s='decoder_g15_10k.pth', p='decoder_g15_10k.png', cuda='Y')
-First content image shape:  torch.Size([3, 256, 256])
-First style image shape:  torch.Size([3, 256, 256])
-Content length:  1000
-Style length:  1000
-Batch size:  10
-Epoch 1/20
