@@ -1,0 +1,111 @@
+Args: Namespace(content_dir='/ingenuity_NAS/dataset/public/coco/images/train2017/', style_dir='/ingenuity_NAS/dataset/public/wikiart/', lr=0.0001, lr_decay=5e-05, style_weight=10.0, content_weight=1.0, n_threads=2, gamma=0.75, e=20, b=20, l='encoder.pth', s='decoder_g075_10k.pth', p='decoder_g075_10k.png', cuda='Y')
+Cuda available:  True
+COCO dataset length:  118287
+Wikiart dataset length:  81556
+First content image shape:  torch.Size([3, 256, 256])
+First style image shape:  torch.Size([3, 256, 256])
+Content Dataset length:  10000 , Style Dataset length:  10000
+Batch size:  20
+Content length:  10000  /  20  =  500
+Style length:  10000  /  20  =  500
+Device cuda
+Epoch 1/20
+Content Loss: 2.28, Style Loss: 5.21, Total Loss: 6.19
+
+Time taken for epoch: 373.46 seconds
+
+Epoch 2/20
+Content Loss: 1.76, Style Loss: 2.12, Total Loss: 3.36
+
+Time taken for epoch: 366.23 seconds
+
+Epoch 3/20
+Content Loss: 1.57, Style Loss: 1.72, Total Loss: 2.86
+
+Time taken for epoch: 368.47 seconds
+
+Epoch 4/20
+Content Loss: 1.45, Style Loss: 1.50, Total Loss: 2.58
+
+Time taken for epoch: 368.70 seconds
+
+Epoch 5/20
+Content Loss: 1.35, Style Loss: 1.34, Total Loss: 2.35
+
+Time taken for epoch: 371.34 seconds
+
+Epoch 6/20
+Content Loss: 1.27, Style Loss: 1.24, Total Loss: 2.20
+
+Time taken for epoch: 371.54 seconds
+
+Epoch 7/20
+Content Loss: 1.21, Style Loss: 1.18, Total Loss: 2.09
+
+Time taken for epoch: 369.65 seconds
+
+Epoch 8/20
+Content Loss: 1.16, Style Loss: 1.11, Total Loss: 1.99
+
+Time taken for epoch: 371.92 seconds
+
+Epoch 9/20
+Content Loss: 1.12, Style Loss: 1.07, Total Loss: 1.93
+
+Time taken for epoch: 372.04 seconds
+
+Epoch 10/20
+Content Loss: 1.09, Style Loss: 1.05, Total Loss: 1.88
+
+Time taken for epoch: 374.10 seconds
+
+Epoch 11/20
+Content Loss: 1.06, Style Loss: 1.03, Total Loss: 1.83
+
+Time taken for epoch: 369.98 seconds
+
+Epoch 12/20
+Content Loss: 1.03, Style Loss: 0.99, Total Loss: 1.77
+
+Time taken for epoch: 372.05 seconds
+
+Epoch 13/20
+Content Loss: 1.01, Style Loss: 0.97, Total Loss: 1.74
+
+Time taken for epoch: 368.72 seconds
+
+Epoch 14/20
+Content Loss: 0.99, Style Loss: 0.94, Total Loss: 1.70
+
+Time taken for epoch: 369.93 seconds
+
+Epoch 15/20
+Content Loss: 0.97, Style Loss: 0.93, Total Loss: 1.67
+
+Time taken for epoch: 368.19 seconds
+
+Epoch 16/20
+Content Loss: 0.95, Style Loss: 0.92, Total Loss: 1.64
+
+Time taken for epoch: 369.18 seconds
+
+Epoch 17/20
+Content Loss: 0.94, Style Loss: 0.92, Total Loss: 1.63
+
+Time taken for epoch: 371.49 seconds
+
+Epoch 18/20
+Content Loss: 0.93, Style Loss: 0.88, Total Loss: 1.58
+
+Time taken for epoch: 368.87 seconds
+
+Epoch 19/20
+Content Loss: 0.92, Style Loss: 0.88, Total Loss: 1.58
+
+Time taken for epoch: 370.37 seconds
+
+Epoch 20/20
+Content Loss: 0.90, Style Loss: 0.88, Total Loss: 1.56
+
+Time taken for epoch: 364.56 seconds
+
