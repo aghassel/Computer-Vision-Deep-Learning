@@ -9,7 +9,7 @@ import AdaIN_net as net
 if __name__ == '__main__':
 
 	image_size = 512
-	device = 'cpu'
+	device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 	parser = argparse.ArgumentParser()
 	parser.add_argument('-content_image', type=str, help='test image')
@@ -18,7 +18,7 @@ if __name__ == '__main__':
 	parser.add_argument('-decoder_file', type=str, help='decoder weight file')
 	parser.add_argument('-output_path' , type=str, help='output path')
 	parser.add_argument('-alpha', type=float, default=1.0, help='Level of style transfer, value between 0 and 1')
-	parser.add_argument('-cuda', type=str, help='[y/N]')
+	parser.add_argument('-cuda', type=str, help='[Y/N]')
 
 	opt = parser.parse_args()
 	content_image = Image.open(opt.content_image)
