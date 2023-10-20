@@ -16,6 +16,7 @@ if __name__ == '__main__':
 	parser.add_argument('-style_image', type=str, help='style image')
 	parser.add_argument('-encoder_file', type=str, help='encoder weight file')
 	parser.add_argument('-decoder_file', type=str, help='decoder weight file')
+	parser.add_argument('-output_path' , type=str, help='output path')
 	parser.add_argument('-alpha', type=float, default=1.0, help='Level of style transfer, value between 0 and 1')
 	parser.add_argument('-cuda', type=str, help='[y/N]')
 
@@ -29,7 +30,7 @@ if __name__ == '__main__':
 	use_cuda = False
 	if opt.cuda == 'y' or opt.cuda == 'Y':
 		use_cuda = True
-	out_dir = './output/'
+	out_dir = opt.output_path
 	os.makedirs(out_dir, exist_ok=True)
 
 	encoder = net.encoder_decoder.encoder
@@ -64,6 +65,6 @@ if __name__ == '__main__':
 	save_file = out_dir + opt.content_image[opt.content_image.rfind('/')+1: opt.content_image.find('.')] \
 							+"_style_"+ opt.style_image[opt.style_image.rfind('/')+1: opt.style_image.find('.')] \
 							+ "_alpha_" + str(alpha) \
-							+ "_1k_decoder" + output_format 
+							+ "_10k_decoder" + output_format 
 	print('saving output file: ', save_file)
 	save_image(out_tensor, save_file)
