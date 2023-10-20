@@ -21,8 +21,9 @@ if __name__ == '__main__':
 	parser.add_argument('-cuda', type=str, help='[Y/N]')
 
 	opt = parser.parse_args()
-	content_image = Image.open(opt.content_image)
-	style_image = Image.open(opt.style_image)
+	# load image are rgb
+	content_image = Image.open(opt.content_image, mode='r').convert('RGB')
+	style_image = Image.open(opt.style_image, mode='r').convert('RGB')
 	output_format = opt.content_image[opt.content_image.find('.'):]
 	decoder_file = opt.decoder_file
 	encoder_file = opt.encoder_file
@@ -42,7 +43,7 @@ if __name__ == '__main__':
 	model.to(device=device)
 	model.eval()
 
-	print('model loaded OK!')
+	
 
 	content_image = transforms.Resize(size=image_size)(content_image)
 	style_image = transforms.Resize(size=image_size)(style_image)
@@ -51,12 +52,11 @@ if __name__ == '__main__':
 	style_tensor = transforms.ToTensor()(style_image).unsqueeze(0)
 
 	if torch.cuda.is_available() and use_cuda:
-		print('using cuda ...')
 		model.cuda()
 		input_tensor = input_tensor.cuda()
 		style_tensor = style_tensor.cuda()
-	else:
-		print('using cpu ...')
+
+		
 
 	out_tensor = None
 	with torch.no_grad():
