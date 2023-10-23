@@ -16,7 +16,7 @@ if __name__ == '__main__':
 	parser.add_argument('-style_image', type=str, help='style image')
 	parser.add_argument('-encoder_file', type=str, help='encoder weight file')
 	parser.add_argument('-decoder_file', type=str, help='decoder weight file')
-	parser.add_argument('-output_path' , type=str, help='output path')
+	parser.add_argument('-output_path' , type=str, help='output path', default='./output/')
 	parser.add_argument('-alpha', type=float, default=1.0, help='Level of style transfer, value between 0 and 1')
 	parser.add_argument('-cuda', type=str, help='[Y/N]')
 
