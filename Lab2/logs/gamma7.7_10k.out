@@ -1,0 +1,52 @@
+Args: Namespace(content_dir='/ingenuity_NAS/dataset/public/coco/images/train2017/', style_dir='/ingenuity_NAS/dataset/public/wikiart/', lr=0.0001, lr_decay=5e-05, style_weight=10.0, content_weight=1.0, n_threads=2, gamma=7.5, e=20, b=100, l='models/encoder.pth', s='decoder_g7.5_10k.pth', p='decoder_g7.5_10k.png', cuda='Y')
+Cuda available:  True
+COCO dataset length:  118287
+Wikiart dataset length:  81556
+First content image shape:  torch.Size([3, 256, 256])
+First style image shape:  torch.Size([3, 256, 256])
+Content Dataset length:  10000 , Style Dataset length:  10000
+Batch size:  100
+Content length:  10000  /  100  =  100
+Style length:  10000  /  100  =  100
+Device cuda
+Epoch 1/20
+Content Loss: 2.73, Style Loss: 10.26, Total Loss: 12.99
+
+Time taken for epoch: 383.19 seconds
+
+Epoch 2/20
+Content Loss: 2.94, Style Loss: 5.29, Total Loss: 8.24
+
+Time taken for epoch: 350.69 seconds
+
+Epoch 3/20
+Content Loss: 2.64, Style Loss: 2.88, Total Loss: 5.52
+
+Time taken for epoch: 347.46 seconds
+
+Epoch 4/20
+Content Loss: 2.46, Style Loss: 2.18, Total Loss: 4.64
+
+Time taken for epoch: 349.15 seconds
+
+Epoch 5/20
+Content Loss: 2.37, Style Loss: 1.88, Total Loss: 4.25
+
+Time taken for epoch: 348.67 seconds
+
+Epoch 6/20
+Content Loss: 2.30, Style Loss: 1.70, Total Loss: 4.01
+
+Time taken for epoch: 346.93 seconds
+
+Epoch 7/20
+Content Loss: 2.24, Style Loss: 1.59, Total Loss: 3.83
+
+Time taken for epoch: 346.92 seconds
+
+Epoch 8/20
+Content Loss: 2.20, Style Loss: 1.45, Total Loss: 3.65
+
+Time taken for epoch: 350.92 seconds
+
+Epoch 9/20
