@@ -1,0 +1,12 @@
+Args: Namespace(content_dir='/ingenuity_NAS/dataset/public/coco/images/train2017/', style_dir='/ingenuity_NAS/dataset/public/wikiart/', lr=0.0001, lr_decay=5e-05, style_weight=10.0, content_weight=1.0, n_threads=2, gamma=10.0, e=20, b=70, l='models/encoder.pth', s='decoder_g10.0_10k.pth', p='decoder_g10.0_10k.png', cuda='Y')
+Cuda available:  True
+COCO dataset length:  118287
+Wikiart dataset length:  81556
+First content image shape:  torch.Size([3, 256, 256])
+First style image shape:  torch.Size([3, 256, 256])
+Content Dataset length:  10000 , Style Dataset length:  10000
+Batch size:  70
+Content length:  10000  /  70  =  143
+Style length:  10000  /  70  =  143
+Device cuda
+Epoch 1/20

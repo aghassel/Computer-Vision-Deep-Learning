@@ -149,6 +149,7 @@ if __name__ == '__main__':
 
     print('Content Dataset length: ', len(content_dataset), ', Style Dataset length: ', len(style_dataset))
     print("Batch size: ", args.b)
+    
     print("Content length: ", len(content_dataset), ' / ', args.b, ' = ', len(content_loader))
     print("Style length: ", len(style_dataset), ' / ', args.b, ' = ', len(style_loader))
 
@@ -173,25 +174,21 @@ if __name__ == '__main__':
             # loss_c *= args.content_weight # Default is 1
             # loss_s *= args.style_weight # Default is 10, to ensure the generated image reflects more of the style than content
             # Eq. (11)
-            loss = loss_c + args.gamma * loss_s
+            loss = loss_c + loss_s * args.gamma
 
             loss.backward()
             optimizer.step()
-
-            content_losses.append(loss_c.item())
-            style_losses.append(loss_s.item())
-            total_losses.append(loss.item())
 
             epoch_content_loss += loss_c.item()
             epoch_style_loss += loss_s.item()
             epoch_total_loss += loss.item()
 
         epoch_end = time.time()
-            
-        avg_content_loss = sum(content_losses[-len(content_loader):]) / len(content_loader)
-        avg_style_loss = sum(style_losses[-len(style_loader):]) / len(style_loader)
-        avg_total_loss = sum(total_losses[-len(content_loader):]) / len(content_loader)
 
+        avg_content_loss = epoch_content_loss / len(content_loader)
+        avg_style_loss = epoch_style_loss / len(style_loader)
+        avg_total_loss = epoch_total_loss / len(content_loader)
+            
         avg_content_losses.append(avg_content_loss)
         avg_style_losses.append(avg_style_loss)
         avg_total_losses.append(avg_total_loss)
@@ -200,5 +197,5 @@ if __name__ == '__main__':
         print(f"Time taken for epoch: {epoch_end - epoch_start:.2f} seconds\n")
 
         torch.save(net.encoder_decoder.decoder.state_dict(), args.s) 
-    
+
     loss_plot(avg_content_losses,avg_style_losses,avg_total_losses, args.p)           
