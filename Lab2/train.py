@@ -174,16 +174,16 @@ if __name__ == '__main__':
             # loss_c *= args.content_weight # Default is 1
             # loss_s *= args.style_weight # Default is 10, to ensure the generated image reflects more of the style than content
             # Eq. (11)
-            loss_s = args.gamma * loss_s
+            total_loss = loss_c + loss_s 
 
-            loss = loss_c + loss_s
+            loss = loss_c + loss_s * args.gamma 
 
             loss.backward()
             optimizer.step()
 
             epoch_content_loss += loss_c.item()
             epoch_style_loss += loss_s.item()
-            epoch_total_loss += loss.item()
+            epoch_total_loss += total_loss.item()
 
         epoch_end = time.time()
 
