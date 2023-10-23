@@ -60,3 +60,52 @@ Content Loss: 2.12, Style Loss: 1.33, Total Loss: 3.45
 Time taken for epoch: 346.45 seconds
 
 Epoch 11/20
+Content Loss: 2.09, Style Loss: 1.28, Total Loss: 3.37
+
+Time taken for epoch: 349.79 seconds
+
+Epoch 12/20
+Content Loss: 2.05, Style Loss: 1.22, Total Loss: 3.27
+
+Time taken for epoch: 348.20 seconds
+
+Epoch 13/20
+Content Loss: 2.03, Style Loss: 1.18, Total Loss: 3.21
+
+Time taken for epoch: 348.75 seconds
+
+Epoch 14/20
+Content Loss: 2.00, Style Loss: 1.14, Total Loss: 3.14
+
+Time taken for epoch: 347.34 seconds
+
+Epoch 15/20
+Content Loss: 1.98, Style Loss: 1.11, Total Loss: 3.09
+
+Time taken for epoch: 346.50 seconds
+
+Epoch 16/20
+Content Loss: 1.95, Style Loss: 1.09, Total Loss: 3.04
+
+Time taken for epoch: 347.56 seconds
+
+Epoch 17/20
+Content Loss: 1.93, Style Loss: 1.10, Total Loss: 3.03
+
+Time taken for epoch: 347.91 seconds
+
+Epoch 18/20
+Content Loss: 1.91, Style Loss: 1.03, Total Loss: 2.93
+
+Time taken for epoch: 345.23 seconds
+
+Epoch 19/20
+Content Loss: 1.89, Style Loss: 1.00, Total Loss: 2.89
+
+Time taken for epoch: 339.91 seconds
+
+Epoch 20/20
+Content Loss: 1.88, Style Loss: 1.00, Total Loss: 2.88
+
+Time taken for epoch: 336.61 seconds
+
