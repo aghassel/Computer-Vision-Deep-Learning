@@ -174,7 +174,9 @@ if __name__ == '__main__':
             # loss_c *= args.content_weight # Default is 1
             # loss_s *= args.style_weight # Default is 10, to ensure the generated image reflects more of the style than content
             # Eq. (11)
-            loss = loss_c + loss_s * args.gamma
+            loss_s = args.gamma * loss_s
+
+            loss = loss_c + loss_s
 
             loss.backward()
             optimizer.step()
