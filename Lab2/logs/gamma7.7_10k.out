@@ -50,3 +50,13 @@ Content Loss: 2.20, Style Loss: 1.45, Total Loss: 3.65
 Time taken for epoch: 350.92 seconds
 
 Epoch 9/20
+Content Loss: 2.16, Style Loss: 1.39, Total Loss: 3.55
+
+Time taken for epoch: 348.18 seconds
+
+Epoch 10/20
+Content Loss: 2.12, Style Loss: 1.33, Total Loss: 3.45
+
+Time taken for epoch: 346.45 seconds
+
+Epoch 11/20
