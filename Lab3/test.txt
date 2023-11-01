@@ -1,0 +1,1 @@
+!python test.py --batch_size 128 --classes 10 --encoder encoder.pth --frontend frontend_v1.pth 

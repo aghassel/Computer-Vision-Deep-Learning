@@ -2,4 +2,8 @@ python test.py -content_image images/content/000000000081.jpg -style_image image
 python test.py -content_image images/content/000000000081.jpg -style_image images/style/0a585acb9d7134c0b39656a588527385c.jpg -decoder decoder.pth -encoder encoder.pth -alpha 0.9 -cuda Y
 python test.py -content_image images/content/000000000081.jpg -style_image images/style/Andy_Warhol_97.jpg -decoder decoder.pth -encoder encoder.pth -alpha 0.9 -cuda Y
 python test.py -content_image images/content/000000000081.jpg -style_image images/style/the-persistence-of-memory-1931.jpg -decoder decoder.pth -encoder encoder.pth -alpha 0.9 -cuda Y
-python test.py -content_image images/content/000000000081.jpg -style_image images/style/chagall_marc_1.jpg -decoder decoder.pth -encoder encoder.pth -alpha 0.9 -cuda Y
+python test.py -content_image images/content/baboon.jpg -style_image images/style/chagall_marc_1.jpg -decoder decoder.pth -encoder encoder.pth -alpha 0.9 -cuda Y
+
+python test.py -content_image images/content/baboon.jpg -style_image images/style/chagall_marc_1.jpg -decoder decoder_1k_v2.pth -encoder encoder.pth -alpha 0.0 -cuda Y
+python test.py -content_image images/content/baboon.jpg -style_image images/style/chagall_marc_1.jpg -decoder decoder_1k_v2.pth -encoder encoder.pth -alpha 0.5 -cuda Y
+python test.py -content_image images/content/baboon.jpg -style_image images/style/chagall_marc_1.jpg -decoder decoder_1k_v2.pth -encoder encoder.pth -alpha 0.9 -cuda Y
