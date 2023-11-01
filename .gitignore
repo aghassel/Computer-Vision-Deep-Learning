@@ -5,3 +5,14 @@
 /Lab2/src/datasets/
 /Lab2/src/__pycache__/
 Lab1/__pycache__/
+Lab3/__pycache__/vanilla.cpython-39.pyc
+Lab3/__pycache__/vanilla.cpython-311.pyc
+Lab3/data/cifar-10-python.tar.gz
+Lab3/data/cifar-10-batches-py/batches.meta
+Lab3/data/cifar-10-batches-py/data_batch_1
+Lab3/data/cifar-10-batches-py/data_batch_2
+Lab3/data/cifar-10-batches-py/data_batch_3
+Lab3/data/cifar-10-batches-py/data_batch_4
+Lab3/data/cifar-10-batches-py/data_batch_5
+Lab3/data/cifar-10-batches-py/readme.html
+Lab3/data/cifar-10-batches-py/test_batch
