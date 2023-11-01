@@ -8,7 +8,7 @@ from torch.optim.lr_scheduler import StepLR
 
 import matplotlib.pyplot as plt
 
-from vanilla import VanillaFrontend, VGG, ModifiedFrontend, ViTDecoder, CIFAR100Frontend, CIFAR100FrontendImproved
+from vanilla import VanillaFrontend, VGG, ModifiedFrontend, VisualTransformerDecoder, CIFAR100Frontend, CIFAR100FrontendImproved
 
 def plot_loss(loss_list, save_path):
     plt.figure()
@@ -40,7 +40,7 @@ def main():
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ])
 
-    #trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, transform=transform)
+    #trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, \transform=transform)
     trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
@@ -49,8 +49,8 @@ def main():
     encoder = encoder.to(device)
     
     #model = VanillaFrontend(encoder, num_classes=args.classes).to(device)
-    model = CIFAR100FrontendImproved(encoder, num_classes=args.classes).to(device)
-    #model = ViTDecoder(encoder, num_classes=args.classes).to(device)
+    #model = ModifiedFrontend(encoder, num_classes=args.classes).to(device)
+    model = VisualTransformerDecoder(encoder, num_classes=args.classes).to(device)
     criterion = nn.CrossEntropyLoss()
     #optimizer = optim.Adam(model.parameters(), lr=args.lr)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)

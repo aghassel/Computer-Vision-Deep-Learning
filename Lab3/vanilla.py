@@ -59,37 +59,27 @@ class VanillaFrontend(nn.Module):
 
         return self.frontend(x)
 
-class ViTDecoder(nn.Module):
-    def __init__(self, encoder, num_classes=100, image_size=224, patch_size=16, num_heads=8, num_layers=12, hidden_dim=768, mlp_dim=3072):
-        super(ViTDecoder, self).__init__()
-
+class VisualTransformerDecoder(nn.Module):
+    def __init__(self, encoder, channel_size, num_classes):
+        super(VisualTransformerDecoder, self).__init__()
         self.encoder = encoder
-
-        vit_model = models.VisionTransformer(
-            img_size=image_size,
-            patch_size=patch_size,
-            num_heads=num_heads,
-            num_layers=num_layers,
-            hidden_dim=hidden_dim,
-            mlp_dim=mlp_dim,
-            num_classes=0,
-            qkv_bias=True,
-            norm_layer=nn.LayerNorm
-        )
-
-        self.vit_encoder = vit_model
-
-        self.frontend = nn.Sequential(
-            nn.Linear(hidden_dim, num_classes)
+        self.channel_size = channel_size
+        self.num_classes = num_classes
+        self.transformer_decoder = nn.Sequential(
+            nn.Linear(512, self.channel_size),
+            nn.LayerNorm(self.channel_size),
+            nn.TransformerDecoder(
+                nn.TransformerDecoderLayer(d_model=self.channel_size, nhead=8),
+                num_layers=6
+            ),
+            nn.Linear(self.channel_size, self.num_classes)
         )
 
     def forward(self, x):
         with torch.no_grad():
             x = self.encoder(x)
-
-        x = self.vit_encoder(x)
-
-        return self.frontend(x)
+        x = self.transformer_decoder(x)
+        return x
 
 class SqueezeExcitationBlock(nn.Module):
     def __init__(self, channel, reduction=16):
