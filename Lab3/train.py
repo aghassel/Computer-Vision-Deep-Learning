@@ -8,7 +8,7 @@ from torch.optim.lr_scheduler import StepLR
 
 import matplotlib.pyplot as plt
 
-from vanilla import VanillaFrontend, VGG
+from vanilla import VanillaFrontend, VGG, ModifiedFrontend, ViTDecoder
 
 def plot_loss(loss_list, save_path):
     plt.figure()
@@ -46,7 +46,9 @@ def main():
     encoder.load_state_dict(torch.load(args.encoder, map_location=device))  
     encoder = encoder.to(device)
     
-    model = VanillaFrontend(encoder, num_classes=args.classes).to(device)
+    #model = VanillaFrontend(encoder, num_classes=args.classes).to(device)
+    #model = ModifiedFrontend(encoder, num_classes=args.classes).to(device)
+    model = ViTDecoder(encoder, num_classes=args.classes).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     #optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)

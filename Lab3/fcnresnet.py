@@ -2,7 +2,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
-# ... (Bottleneck class and DenseFCNResNet152 class definition as provided in the question) ...
 
 #based on https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py
 class Bottleneck(nn.Module):
@@ -114,7 +113,7 @@ class ResNetEncoder(nn.Module):
         x32s = self.bn6(x32s)
         x32s = self.relu(x32s)
 
-        return x32s
+        return x32s, x16s, x8s, x4s, x2s
 
 # Decoder part of the model
 class ResNetDecoder(nn.Module):
@@ -124,7 +123,7 @@ class ResNetDecoder(nn.Module):
         self.output_channels = output_channels
         ############## FCN decoder ###########
         #conv_up5
-        self.conv_up5 = nn.Sequential(nn.Conv2d(2048+1024, 1024, kernel_size=3, stride=1, padding=1),
+        self.conv_up5 = nn.Sequential(nn.Conv2d(input_channels, 1024, kernel_size=3, stride=1, padding=1),
                                     nn.BatchNorm2d(1024),
                                     nn.ReLU(inplace=True))
         self.up5 = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False)
@@ -191,14 +190,12 @@ if __name__=="__main__":
     import numpy as np
     import torch
     import os
-    from torchsummary import summary
 
     # Create an instance of the ResNetEncoder
     encoder = ResNetEncoder(input_channels=3).to('cuda')
-    summary(encoder, (3, 480, 640))
 
     # Create an instance of the ResNetDecoder
-    decoder = ResNetDecoder(input_channels=1024, output_channels=2).to('cuda')
+    decoder = ResNetDecoder(input_channels=2048, output_channels=2).to('cuda')
     # Note: You need to specify the input_channels parameter to match the output of the encoder.
 
     # Generate some sample input data (adjust the shape as needed)
@@ -206,12 +203,14 @@ if __name__=="__main__":
     input_data = torch.randn(batch_size, 3, 480, 640).to('cuda')
 
     # Pass the input data through the encoder
-    encoder_output = encoder(input_data)
+    x32s, x16s, x8s, x4s, x2s = encoder(input_data)
+
+    # Print the shapes of the encoder outputs
+    print("Encoder Output Shapes:", x32s.shape, x16s.shape, x8s.shape, x4s.shape, x2s.shape)
 
     # Pass the encoder output through the decoder
-    decoder_output = decoder(
-        encoder_output, encoder_output, encoder_output, encoder_output, encoder_output, encoder_output)
+    decoder_output = decoder(x32s, x16s, x8s, x4s, x2s)
 
     # Print the shapes of the encoder and decoder outputs
-    print("Encoder Output Shape:", encoder_output.shape)
+
     print("Decoder Output Shape:", decoder_output[0].shape, decoder_output[1].shape)
