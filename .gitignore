@@ -18,3 +18,4 @@ Lab3/data/cifar-10-batches-py/readme.html
 Lab3/data/cifar-10-batches-py/test_batch
 
 Lab3/data/
+Lab3/__pycache__/

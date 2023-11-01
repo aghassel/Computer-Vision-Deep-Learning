@@ -8,7 +8,7 @@ from torch.optim.lr_scheduler import StepLR
 
 import matplotlib.pyplot as plt
 
-from vanilla import VanillaFrontend, VGG, ModifiedFrontend, ViTDecoder
+from vanilla import VanillaFrontend, VGG, ModifiedFrontend, ViTDecoder, CIFAR100Frontend, CIFAR100FrontendImproved
 
 def plot_loss(loss_list, save_path):
     plt.figure()
@@ -18,6 +18,8 @@ def plot_loss(loss_list, save_path):
     plt.savefig(save_path)
 
 def main():
+
+    torch.autograd.set_detect_anomaly(True)
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch_size', type=int, default=32)
@@ -47,11 +49,11 @@ def main():
     encoder = encoder.to(device)
     
     #model = VanillaFrontend(encoder, num_classes=args.classes).to(device)
-    #model = ModifiedFrontend(encoder, num_classes=args.classes).to(device)
-    model = ViTDecoder(encoder, num_classes=args.classes).to(device)
+    model = CIFAR100FrontendImproved(encoder, num_classes=args.classes).to(device)
+    #model = ViTDecoder(encoder, num_classes=args.classes).to(device)
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
-    #optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
+    #optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
     #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
 
     losses = []
