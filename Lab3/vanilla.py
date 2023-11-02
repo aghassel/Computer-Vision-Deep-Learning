@@ -65,20 +65,30 @@ class VisualTransformerDecoder(nn.Module):
         self.encoder = encoder
         self.channel_size = channel_size
         self.num_classes = num_classes
-        self.transformer_decoder = nn.Sequential(
-            nn.Linear(512, self.channel_size),
-            nn.LayerNorm(self.channel_size),
-            nn.TransformerDecoder(
-                nn.TransformerDecoderLayer(d_model=self.channel_size, nhead=8),
-                num_layers=6
-            ),
-            nn.Linear(self.channel_size, self.num_classes)
+        self.linear = nn.Linear(512 * 4 * 4, self.channel_size)
+        self.norm = nn.LayerNorm(self.channel_size)
+        self.transformer_decoder = nn.TransformerDecoder(
+            nn.TransformerDecoderLayer(d_model=self.channel_size, nhead=8),
+            num_layers=6
         )
-
+        self.output_layer = nn.Linear(self.channel_size, self.num_classes)
+    
     def forward(self, x):
         with torch.no_grad():
             x = self.encoder(x)
-        x = self.transformer_decoder(x)
+        x = x.view(x.size(0), -1)  # Flatten the output of the encoder
+        
+        # Manually apply the layers that were previously in nn.Sequential
+        x = self.linear(x)
+        x = self.norm(x)
+        
+        # The transformer decoder can now be called with 'tgt' and 'memory' as expected.
+        # Assuming that the 'memory' should be the same as 'tgt' here, which might not be the case.
+        # You will need to adjust based on your model's specifics.
+        memory = x
+        x = self.transformer_decoder(tgt=x, memory=memory)
+        
+        x = self.output_layer(x)
         return x
 
 class SqueezeExcitationBlock(nn.Module):
