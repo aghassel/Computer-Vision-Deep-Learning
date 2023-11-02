@@ -1,8 +1,10 @@
 import torch
 import torchvision
 import torchvision.transforms as transforms
-from vanilla import VanillaFrontend, VGG, ModFrontend
+#from vanilla import VanillaFrontend, VGG, ModFrontend
 #from model import VGG, ModFrontend
+#from arch.VGGResNet import VGG, VGG_w_skip
+from arch.fcnVGG import CustomDecoder, VGG
 import argparse
 
 def accuracy(output, target, topk=(1,)):
@@ -43,7 +45,7 @@ def main():
     encoder = VGG.encoder
     encoder.load_state_dict(torch.load(args.encoder, map_location=device))  
     encoder = encoder.to(device)
-    model = ModFrontend(encoder, num_classes=args.classes).to(device)
+    model = CustomDecoder(encoder, num_classes=args.classes).to(device)
     #model = VanillaFrontend(encoder, num_classes=args.classes).to(device)
     model.load_state_dict(torch.load(args.frontend, map_location=device))
     model.eval()
