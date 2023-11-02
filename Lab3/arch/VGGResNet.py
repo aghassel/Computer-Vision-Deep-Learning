@@ -57,7 +57,7 @@ class VGG_w_skip(nn.Module):
         return self.frontend(x)
 
 class VGGResNet(nn.Module):
-    def __init__(self, pretrained_vgg=None):
+    def __init__(self, pretrained_vgg=None, num_classes=1000):
         super(VGGResNet, self).__init__()
 
         # Initialize VGG encoder with the option to load a pretrained model
@@ -69,39 +69,20 @@ class VGGResNet(nn.Module):
 
         # Initialize ResNet decoder
         self.decoder = nn.Sequential(
-            # conv_up5
-            nn.Conv2d(2048 + 1024, 1024, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(1024),
+            # Add your decoder layers here
+            nn.Conv2d(512, 256, kernel_size=3, stride=1, padding=1),
             nn.ReLU(inplace=True),
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
-            # conv_up4
-            nn.Conv2d(1024 + 512, 512, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(512),
+            nn.Conv2d(256, 128, kernel_size=3, stride=1, padding=1),
             nn.ReLU(inplace=True),
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
-            # conv_up3
-            nn.Conv2d(512 + 256, 256, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(256),
+            nn.Conv2d(128, 64, kernel_size=3, stride=1, padding=1),
             nn.ReLU(inplace=True),
             nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
-            # conv_up2
-            nn.Conv2d(256 + 128, 128, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(128),
-            nn.ReLU(inplace=True),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False),
-            # conv_up1
-            nn.Conv2d(128 + 64, 64, kernel_size=3, stride=1, padding=1),
-            nn.BatchNorm2d(64),
-            nn.ReLU(inplace=True),
-            nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False)
         )
 
-        # Initialize skip connections
-        self.skip1 = nn.Identity()  # For conv_up5
-        self.skip2 = nn.Identity()  # For conv_up4
-        self.skip3 = nn.Identity()  # For conv_up3
-        self.skip4 = nn.Identity()  # For conv_up2
-        self.skip5 = nn.Identity()  # For conv_up1
+        # Output layer for classification
+        self.classifier = nn.Linear(64 * 16 * 16, num_classes)  # Adjust the input size according to your decoder architecture
 
     def forward(self, x):
         # Forward pass through the encoder
@@ -115,22 +96,25 @@ class VGGResNet(nn.Module):
         decoder_input = encoder_outputs.pop()
 
         # Forward pass through the decoder with skip connections
-        for i, layer in enumerate(self.decoder):
-            if i in [1, 3, 5, 7]:  # indices where skip connections are to be concatenated
-                skip_output = encoder_outputs.pop()  # get the corresponding encoder output
-                decoder_input = torch.cat((decoder_input, skip_output), 1)  # concatenate along the channel dimension
+        for layer in self.decoder:
             decoder_input = layer(decoder_input)
 
-        return decoder_input
+        # Flatten the decoder output
+        decoder_input = decoder_input.view(decoder_input.size(0), -1)
+
+        # Pass through the classifier for classification
+        output = self.classifier(decoder_input)
+
+        return output
 
 # Test the model with a 32x32x3 image tensor
 if __name__ == '__main__':
     # Create a dummy input tensor
     dummy_input = torch.randn(1, 3, 32, 32)
-
+    
     # Instantiate the model
-    model = VGGResNet()
-
+    model = VGGResNet(num_classes=10)  # Change the number of classes to match your classification task
+    
     # Pass the dummy input through the model
     output = model(dummy_input)
     print(output.size())
