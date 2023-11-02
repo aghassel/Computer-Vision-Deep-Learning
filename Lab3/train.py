@@ -4,11 +4,12 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.optim as optim
-from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 
 import matplotlib.pyplot as plt
 
-from vanilla import VanillaFrontend, VGG, ModifiedFrontend, VisualTransformerDecoder, CIFAR100Frontend, CIFAR100FrontendImproved
+from vanilla import VanillaFrontend, VGG, VisualTransformerDecoder, ModFrontend
+#from model import VGG, ModFrontend
 
 def plot_loss(loss_list, save_path):
     plt.figure()
@@ -40,21 +41,30 @@ def main():
         transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
     ])
 
+    transform_train = transforms.Compose([
+    transforms.RandomCrop(32, padding=4),  
+    transforms.RandomHorizontalFlip(),  
+    transforms.RandomRotation(15),  
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  
+    transforms.ToTensor(),  
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),  
+    ])
+
     #trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, \transform=transform)
-    trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
+    trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform_train)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=8)
 
     encoder = VGG.encoder
     encoder.load_state_dict(torch.load(args.encoder, map_location=device))  
     encoder = encoder.to(device)
     
     #model = VanillaFrontend(encoder, num_classes=args.classes).to(device)
-    #model = ModifiedFrontend(encoder, num_classes=args.classes).to(device)
-    model = VisualTransformerDecoder(encoder, num_classes=args.classes).to(device)
+    model = ModFrontend(encoder, num_classes=args.classes).to(device)
+    #model = VisualTransformerDecoder(encoder, 128, num_classes=args.classes).to(device)
     criterion = nn.CrossEntropyLoss()
-    #optimizer = optim.Adam(model.parameters(), lr=args.lr)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
-    #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.95)
+    #scheduler = ReduceLROnPlateau(optimizer, 'min', patience=5, factor=0.5, verbose=True)
 
     losses = []
 
@@ -81,7 +91,8 @@ def main():
         losses.append(avg_loss)
         print(f'Epoch {epoch+1}, Training loss: {avg_loss:.3f}')
 
-        #scheduler.step()
+        scheduler.step()
+        #scheduler.step(avg_loss)
 
     torch.save(model.state_dict(), args.frontend)
     plot_loss(losses, args.save_plot)

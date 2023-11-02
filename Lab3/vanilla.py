@@ -96,9 +96,9 @@ class SqueezeExcitationBlock(nn.Module):
         y = self.fc(x)
         return x * y.expand_as(x)
 
-class CIFAR100FrontendImproved(nn.Module):
+class ModFrontend(nn.Module):
     def __init__(self, encoder, num_classes=100):
-        super(CIFAR100FrontendImproved, self).__init__()
+        super(ModFrontend, self).__init__()
 
         self.encoder = encoder
 

@@ -1,7 +1,8 @@
 import torch
 import torchvision
 import torchvision.transforms as transforms
-from vanilla import VanillaFrontend, VGG, ModifiedFrontend, CIFAR100Frontend, CIFAR100FrontendImproved
+from vanilla import VanillaFrontend, VGG, ModFrontend
+#from model import VGG, ModFrontend
 import argparse
 
 def accuracy(output, target, topk=(1,)):
@@ -42,7 +43,7 @@ def main():
     encoder = VGG.encoder
     encoder.load_state_dict(torch.load(args.encoder, map_location=device))  
     encoder = encoder.to(device)
-    model = CIFAR100FrontendImproved(encoder, num_classes=args.classes).to(device)
+    model = ModFrontend(encoder, num_classes=args.classes).to(device)
     #model = VanillaFrontend(encoder, num_classes=args.classes).to(device)
     model.load_state_dict(torch.load(args.frontend, map_location=device))
     model.eval()
