@@ -5,6 +5,7 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
+import time
 
 import matplotlib.pyplot as plt
 
@@ -29,7 +30,7 @@ def main():
     parser.add_argument('--save_plot', type=str)
     args = parser.parse_args()
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Device being used: {device}")
     
     transform = transforms.Compose([
@@ -48,16 +49,16 @@ def main():
     
     #model = VanillaFrontend(encoder, num_classes=args.classes).to(device)
     #model = ModifiedFrontend(encoder, num_classes=args.classes).to(device)
-    model = VisualTransformerDecoder(encoder, num_classes=args.classes).to(device)
+    model = VisualTransformerDecoder(encoder, channel_size=512 ,num_classes=args.classes).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
     #optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
     #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95)
 
     losses = []
-
+    total_time = 0
     for epoch in range(args.epochs):
-        
+        epoch_start = time.time()
         running_loss = 0.0
         num_batches = 0
 
@@ -75,12 +76,15 @@ def main():
             running_loss += loss.item()
             num_batches += 1
         
+        epoch_end = time.time()
+        
         avg_loss = running_loss / num_batches
         losses.append(avg_loss)
-        print(f'Epoch {epoch+1}, Training loss: {avg_loss:.3f}')
+        print(f'Epoch {epoch+1}, Training loss: {avg_loss:.3f}, Time taken: {epoch_end - epoch_start:.3f} seconds')
 
         #scheduler.step()
-
+    print ('Finished Training')
+    print (f'Total time taken: {time.time() - epoch_start:.3f} seconds')
     torch.save(model.state_dict(), args.frontend)
     plot_loss(losses, args.save_plot)
 
