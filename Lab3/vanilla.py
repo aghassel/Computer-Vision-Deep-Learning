@@ -1,6 +1,3 @@
-#   Adapted from:
-#       https://github.com/naoto0804/pytorch-AdaIN
-
 import torch
 import torchvision
 import torchvision.models as models
@@ -8,97 +5,59 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.optim as optim
 
-
 class VGG:
-        encoder = nn.Sequential(
-        nn.Conv2d(3, 3, (1, 1)),
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(3, 64, (3, 3)),
-        nn.ReLU(),  # relu1-1
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(64, 64, (3, 3)),
-        nn.ReLU(),  # relu1-2
-        nn.MaxPool2d((2, 2), (2, 2), (0, 0), ceil_mode=True),
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(64, 128, (3, 3)),
-        nn.ReLU(),  # relu2-1
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(128, 128, (3, 3)),
-        nn.ReLU(),  # relu2-2
-        nn.MaxPool2d((2, 2), (2, 2), (0, 0), ceil_mode=True),
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(128, 256, (3, 3)),
-        nn.ReLU(),  # relu3-1
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(256, 256, (3, 3)),
-        nn.ReLU(),  # relu3-2
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(256, 256, (3, 3)),
-        nn.ReLU(),  # relu3-3
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(256, 256, (3, 3)),
-        nn.ReLU(),  # relu3-4
-        nn.MaxPool2d((2, 2), (2, 2), (0, 0), ceil_mode=True),
-        nn.ReflectionPad2d((1, 1, 1, 1)),
-        nn.Conv2d(256, 512, (3, 3)),
-        nn.ReLU(),  # relu4-1, this is the last layer used
-    )
-        
+    encoder = nn.Sequential(
+    nn.Conv2d(3, 3, (1, 1)),
+    nn.ReflectionPad2d((1, 1, 1, 1)),
+    nn.Conv2d(3, 64, (3, 3)),
+    nn.ReLU(),
+    nn.ReflectionPad2d((1, 1, 1, 1)),
+    nn.Conv2d(64, 64, (3, 3)),
+    nn.ReLU(),
+    nn.MaxPool2d((2, 2), (2, 2), (0, 0), ceil_mode=True),
+    nn.ReflectionPad2d((1, 1, 1, 1)),
+    nn.Conv2d(64, 128, (3, 3)),
+    nn.ReLU(),
+    nn.ReflectionPad2d((1, 1, 1, 1)),
+    nn.Conv2d(128, 128, (3, 3)),
+    nn.ReLU(),
+    nn.MaxPool2d((2, 2), (2, 2), (0, 0), ceil_mode=True),
+    nn.ReflectionPad2d((1, 1, 1, 1)),
+    nn.Conv2d(128, 256, (3, 3)),
+    nn.ReLU(),
+    nn.ReflectionPad2d((1, 1, 1, 1)),
+    nn.Conv2d(256, 256, (3, 3)),
+    nn.ReLU(),
+    nn.ReflectionPad2d((1, 1, 1, 1)),
+    nn.Conv2d(256, 256, (3, 3)),
+    nn.ReLU(),
+    nn.ReflectionPad2d((1, 1, 1, 1)),
+    nn.Conv2d(256, 256, (3, 3)),
+    nn.ReLU(),
+    nn.MaxPool2d((2, 2), (2, 2), (0, 0), ceil_mode=True),
+    nn.ReflectionPad2d((1, 1, 1, 1)),
+    nn.Conv2d(256, 512, (3, 3)),
+    nn.ReLU(),
+)
+
 class VanillaFrontend(nn.Module):
     def __init__(self, encoder, num_classes=100):
         super(VanillaFrontend, self).__init__()
 
-        self.encoder = encoder  
-
-        self.frontend = nn.Sequential(
-            nn.AdaptiveAvgPool2d((1, 1)),   # Convert the 512 feature maps to 1x1x512
-            nn.Flatten(),                   # Flatten the 1x1x512 to 512x1
-            nn.Linear(512, num_classes)  
-        )
-
-    def forward(self, x):
-        
-        with torch.no_grad():
-            x = self.encoder(x)  
-
-        return self.frontend(x)
-
-class ModifiedFrontend(nn.Module):
-    def __init__(self, encoder, num_classes=100):
-        super(ModifiedFrontend, self).__init__()
-
         self.encoder = encoder
-        # Load a pre-trained ResNeXt-50 model
-        resnext = models.resnext50_32x4d(pretrained=True)
 
-        # Remove the fully connected layer
-        modules = list(resnext.children())[:-1]
-        self.encoder = nn.Sequential(*modules)
-
-        # Replace the frontend with your desired structure
         self.frontend = nn.Sequential(
-            nn.AdaptiveAvgPool2d((1, 1)),  # Convert the feature maps to 1x1
-            nn.Flatten(),                 # Flatten the 1x1 feature map
-            nn.Linear(2048, num_classes) # Fully connected layer
+            nn.AdaptiveAvgPool2d((1, 1)),
+            nn.Flatten(),
+            nn.Linear(512, num_classes)
         )
 
     def forward(self, x):
-        x = self.encoder(x)
-        
+
+        with torch.no_grad():
+            x = self.encoder(x)
+
         return self.frontend(x)
-
-class CustomFrontend(nn.Module):
-    def __init__(self, num_classes):
-        super(CustomFrontend, self).__init__()
-        self.resnet_frontend = models.resnet50(pretrained=True)  # Load a pretrained ResNet model
-        # Modify the ResNet model if needed (e.g., remove the last layer)
-        num_features = self.resnet_frontend.fc.in_features
-        self.resnet_frontend.fc = nn.Linear(num_features, num_classes)  # Adjust input size for ResNet variant
-
-    def forward(self, x):
-        x = self.encoder
-        return self.resnet_frontend(x)
-
 
 class VisualTransformerDecoder(nn.Module):
     def __init__(self, encoder, channel_size, num_classes):
@@ -131,3 +90,51 @@ class VisualTransformerDecoder(nn.Module):
         
         x = self.output_layer(x)
         return x
+
+class SqueezeExcitationBlock(nn.Module):
+    def __init__(self, channel, reduction=16):
+        super(SqueezeExcitationBlock, self).__init__()
+        self.fc = nn.Sequential(
+            nn.Linear(channel, channel // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(channel // reduction, channel, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        b, c = x.size()
+        y = self.fc(x)
+        return x * y.expand_as(x)
+
+class ModFrontend(nn.Module):
+    def __init__(self, encoder, num_classes=100):
+        super(ModFrontend, self).__init__()
+
+        self.encoder = encoder
+
+        self.pool = nn.AdaptiveAvgPool2d((1, 1))
+
+        self.intermediate = nn.Sequential(
+            nn.Flatten(),
+            nn.Linear(512, 1024),
+            nn.BatchNorm1d(1024),
+            nn.ReLU(),
+            SqueezeExcitationBlock(1024),
+            nn.Dropout(p=0.5),
+            nn.Linear(1024, 512),
+            nn.BatchNorm1d(512),
+            nn.ReLU(),
+        )
+
+        self.classifier = nn.Linear(512, num_classes)
+        self.match_dimension = nn.Linear(512, 512)
+
+    def forward(self, x):
+
+        encoder_output = self.encoder(x)
+        pooled_output = self.pool(encoder_output)
+        residual = self.match_dimension(pooled_output.view(pooled_output.size(0), -1))
+        x = self.intermediate(pooled_output)
+        x = x + residual
+
+        return self.classifier(x)
