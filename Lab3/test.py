@@ -2,7 +2,7 @@ import torch
 import torchvision
 import torchvision.transforms as transforms
 from vanilla import VanillaFrontend, VGG, ModFrontend
-#from model import VGG, ModFrontend
+#from model import VGG, ModFrontend, VisualTransformerDecoder
 import argparse
 
 def accuracy(output, target, topk=(1,)):
@@ -22,10 +22,10 @@ def accuracy(output, target, topk=(1,)):
 
 def main():
     parser = argparse.ArgumentParser(description="Testing")
-    parser.add_argument('--batch_size', type=int, default=4)
+    parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--classes', type=int, default=100)
-    parser.add_argument('--encoder', type=str)
-    parser.add_argument('--frontend', type=str)
+    parser.add_argument('--encoder', type=str, default='encoder.pth' )
+    parser.add_argument('--frontend', type=str, default='frontend.pth')
     args = parser.parse_args()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

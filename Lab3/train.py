@@ -4,13 +4,13 @@ import torchvision
 import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.optim as optim
-from torch.optim.lr_scheduler import StepLR
+from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau
 import time
 
 import matplotlib.pyplot as plt
 
-from vanilla import VanillaFrontend, VGG, VisualTransformerDecoder, ModFrontend
-#from model import VGG, ModFrontend
+from vanilla import VanillaFrontend, VGG, ModFrontend
+#from model import VGG, ModFrontend, VisualTransformerDecoder
 
 def plot_loss(loss_list, save_path):
     plt.figure()
@@ -24,13 +24,13 @@ def main():
     torch.autograd.set_detect_anomaly(True)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch_size', type=int, default=32)
-    parser.add_argument('--epochs', type=int, default=20)
-    parser.add_argument('--lr', type=float, default=0.0001)
+    parser.add_argument('--batch_size', type=int, default=128)
+    parser.add_argument('--epochs', type=int, default=50)
+    parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--classes', type=int, default=100)
-    parser.add_argument('--encoder', type=str)
-    parser.add_argument('--frontend', type=str)
-    parser.add_argument('--save_plot', type=str)
+    parser.add_argument('--encoder', type=str, default='encoder.pth')
+    parser.add_argument('--frontend', type=str, default='frontend3.pth')
+    parser.add_argument('--save_plot', type=str, default='loss3.png')
     args = parser.parse_args()
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -51,7 +51,6 @@ def main():
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),  
     ])
 
-    #trainset = torchvision.datasets.CIFAR10(root='./data', train=True, download=True, \transform=transform)
     trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform_train)
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=8)
 
@@ -60,12 +59,11 @@ def main():
     encoder = encoder.to(device)
     
     #model = VanillaFrontend(encoder, num_classes=args.classes).to(device)
-    #model = ModifiedFrontend(encoder, num_classes=args.classes).to(device)
-    model = VisualTransformerDecoder(encoder, channel_size=512 ,num_classes=args.classes).to(device)
+    model = ModFrontend(encoder, num_classes=args.classes).to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
-    #scheduler = ReduceLROnPlateau(optimizer, 'min', patience=5, factor=0.5, verbose=True)
+    #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+    scheduler = ReduceLROnPlateau(optimizer, 'min', patience=5, factor=0.5, verbose=True)
 
     losses = []
     total_time = 0
@@ -93,10 +91,11 @@ def main():
         avg_loss = running_loss / num_batches
         losses.append(avg_loss)
         print(f'Epoch {epoch+1}, Training loss: {avg_loss:.3f}, Time taken: {epoch_end - epoch_start:.3f} seconds')
-        scheduler.step()
+        total_time += epoch_end - epoch_start
+        scheduler.step(avg_loss)
 
     print ('Finished Training')
-    print (f'Total time taken: {time.time() - epoch_start:.3f} seconds')
+    print (f'Total time taken: {total_time:.3f} seconds')
     torch.save(model.state_dict(), args.frontend)
     plot_loss(losses, args.save_plot)
 

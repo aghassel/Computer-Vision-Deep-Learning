@@ -1,0 +1,5 @@
+<<<<<<< HEAD
+!python train.py --batch_size 128 --epochs 50 --lr 0.001 --classes 10 --encoder encoder.pth --frontend frontend.pth
+=======
+!python train.py --batch_size 128 --epochs 50 --lr 0.001 --classes 100 --encoder encoder.pth --frontend frontend.pth
+>>>>>>> 56e8da05377527a4f9da347397dd6a28c0f0f7f1
