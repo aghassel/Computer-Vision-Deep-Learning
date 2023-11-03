@@ -4,7 +4,7 @@ import torchvision.transforms as transforms
 #from vanilla import VanillaFrontend, VGG, ModFrontend
 #from model import VGG, ModFrontend
 #from arch.VGGResNet import VGG, VGG_w_skip
-from arch.fcnVGG import CustomDecoder, VGG
+from arch.denseVGGResNet import VGG, DenseResNet152
 import argparse
 
 def accuracy(output, target, topk=(1,)):
@@ -29,8 +29,16 @@ def main():
     parser.add_argument('--encoder', type=str)
     parser.add_argument('--frontend', type=str)
     args = parser.parse_args()
+    print ('Params:')
+    print ('\tbatch_size: ', args.batch_size)
+    print ('\tclasses: ', args.classes)
+    print ('\tencoder: ', args.encoder)
+    print ('\tfrontend: ', args.frontend)
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    #device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+    device = torch.device("cpu")
     print(f"Device being used: {device}")
 
     transform = transforms.Compose([
@@ -45,7 +53,7 @@ def main():
     encoder = VGG.encoder
     encoder.load_state_dict(torch.load(args.encoder, map_location=device))  
     encoder = encoder.to(device)
-    model = CustomDecoder(encoder, num_classes=args.classes).to(device)
+    model = DenseResNet152(encoder, num_classes=args.classes).to(device)
     #model = VanillaFrontend(encoder, num_classes=args.classes).to(device)
     model.load_state_dict(torch.load(args.frontend, map_location=device))
     model.eval()
