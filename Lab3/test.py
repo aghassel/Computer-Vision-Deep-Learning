@@ -1,9 +1,11 @@
 import torch
 import torchvision
 import torchvision.transforms as transforms
-from vanilla import VanillaFrontend, VGG, ModFrontend
+#from vanilla import VanillaFrontend, VGG, ModFrontend
 #from model import VGG, ModFrontend, VisualTransformerDecoder
 import argparse
+
+from model import VGG, ModFrontend
 
 def accuracy(output, target, topk=(1,)):
     with torch.no_grad():
@@ -25,7 +27,7 @@ def main():
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--classes', type=int, default=100)
     parser.add_argument('--encoder', type=str, default='encoder.pth' )
-    parser.add_argument('--frontend', type=str, default='frontend.pth')
+    parser.add_argument('--frontend', type=str, default='models/frontend_best.pth')
     args = parser.parse_args()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

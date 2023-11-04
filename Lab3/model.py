@@ -88,11 +88,11 @@ class ModFrontend(nn.Module):
             nn.Linear(512, 1024),
             nn.BatchNorm1d(1024),
             nn.ReLU(),
-            nn.Dropout(p=0.5),  # Increase dropout rate
+            nn.Dropout(p=0.3),  # Increase dropout rate
             nn.Linear(1024, 512),
             nn.BatchNorm1d(512),
             nn.ReLU(),
-            nn.Dropout(p=0.5),  # Add another dropout here
+            nn.Dropout(p=0.3),  # Add another dropout here
         )
         # Consider using a more complex attention mechanism if needed
         self.attention = AttentionModule(512)  # Advanced attention module if applicable
@@ -108,6 +108,8 @@ class ModFrontend(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
+
+
 class VisualTransformerDecoder(nn.Module):
     def __init__(self, encoder, channel_size, num_classes):
         super(VisualTransformerDecoder, self).__init__()

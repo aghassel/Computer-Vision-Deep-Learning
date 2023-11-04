@@ -10,7 +10,9 @@ import time
 
 import matplotlib.pyplot as plt
 
-from vanilla import VanillaFrontend, VGG, ModFrontend
+#from vanilla import VanillaFrontend, VGG, ModFrontend
+
+from model import VGG, ModFrontend
 
 def plot_loss(loss_list, save_path):
     plt.figure()
@@ -44,9 +46,18 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--classes', type=int, default=100)
     parser.add_argument('--encoder', type=str, default='encoder.pth')
-    parser.add_argument('--frontend', type=str, default=f'frontend_312.pth')
-    parser.add_argument('--save_plot', type=str, default=f'loss_312.png')
+    parser.add_argument('--frontend', type=str, default=f'frontend.pth')
+    parser.add_argument('--save_plot', type=str, default=f'loss.png')
     args = parser.parse_args()
+
+    print('Parameters')
+    print(f'\tbatch size: {args.batch_size}')
+    print(f'\tepochs: {args.epochs}')
+    print(f'\tlr: {args.lr}')
+    print(f'\tclasses: {args.classes}')
+    print(f'\tencoder: {args.encoder}')
+    print(f'\tfrontend: {args.frontend}')
+    print(f'\tsave_plot: {args.save_plot}')
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     print(f"Device being used: {device}")
@@ -67,10 +78,10 @@ if __name__ == '__main__':
     ])
 
     trainset = torchvision.datasets.CIFAR100(root='./data', train=True, download=True, transform=transform_train)
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=8)
+    trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
     testset = torchvision.datasets.CIFAR100(root='./data', train=False, download=True, transform=transform)
-    testloader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=False, num_workers=8)
+    testloader = torch.utils.data.DataLoader(testset, batch_size=args.batch_size, shuffle=False, num_workers=2)
 
     encoder = VGG.encoder
     encoder.load_state_dict(torch.load(args.encoder, map_location=device))  
@@ -78,8 +89,9 @@ if __name__ == '__main__':
     
     model = ModFrontend(encoder, num_classes=args.classes).to(device)
     criterion = nn.CrossEntropyLoss()
+    #optimizer = optim.AdamW(model.parameters(), lr=args.lr)
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
-    #scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+    #scheduler = StepLR(optimizer, step_size=5, gamma=0.95)
     scheduler = ReduceLROnPlateau(optimizer, 'min', patience=5, factor=0.5, verbose=True)
 
     losses = []
@@ -92,13 +104,8 @@ if __name__ == '__main__':
     for epoch in range(args.epochs):
         
         running_loss = 0.0
-        top1_accuracy = 0.0
-        top5_accuracy = 0.0
-
-        epoch_start = time.time()
-
-
         num_batches = 0
+        epoch_start = time.time()
 
         for i, data in enumerate(trainloader, 0):
 
@@ -124,6 +131,10 @@ if __name__ == '__main__':
 
         model.eval()
 
+        top1_accuracy = 0.0
+        top5_accuracy = 0.0
+        num_batches = 0  
+
         with torch.no_grad():
             for i, data in enumerate(testloader, 0):
                 images, labels = data[0].to(device), data[1].to(device) 
@@ -136,22 +147,17 @@ if __name__ == '__main__':
         top1_avg_accuracy = top1_accuracy / num_batches
         top5_avg_accuracy = top5_accuracy / num_batches
 
-        # Check if there is a new best model
         if top1_avg_accuracy > best_top1_accuracy:
             best_top1_accuracy = top1_avg_accuracy
             best_top5_accuracy = top5_avg_accuracy
             best_model_state = model.state_dict()
-            torch.save(best_model_state, f"best_model_{epoch+1}.pth")
-            print(f"New best model saved with Top 1 accuracy: {best_top1_accuracy:.2f}%")
-
         print(f'Epoch {epoch+1}, Top 1 accuracy: {top1_avg_accuracy:.2f}%, Top 5 accuracy: {top5_avg_accuracy:.2f}%')
+        model.train()
 
     print('Finished Training')
     print(f'Total time taken: {total_time:.3f} seconds')
     
-    # Save the best model at the end if it hasn't been saved already
-    if best_model_state is not None:
-        torch.save(best_model_state, 'best_model.pth')
-        print("Best model saved with Top 1 accuracy: {:.2f}%".format(best_top1_accuracy))
+    torch.save(best_model_state, f'best_model_{args.frontend}_{top5_avg_accuracy:.2f}.pth')
+    print(f"Best model saved with Top-1 accuracy: {best_top1_accuracy:.2f}%, Top-5 accuracy: {best_top5_accuracy:.2f}%")
         
     plot_loss(losses, args.save_plot)
