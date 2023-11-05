@@ -1,11 +1,11 @@
+# accuracy function from https://discuss.pytorch.org/t/imagenet-example-accuracy-calculation/7840
+
 import torch
 import torchvision
 import torchvision.transforms as transforms
-#from vanilla import VanillaFrontend, VGG, ModFrontend
-#from model import VGG, ModFrontend, VisualTransformerDecoder
 import argparse
 
-from model import VGG, ModFrontend
+from model import VanillaFrontend, VGG, ModFrontend
 
 def accuracy(output, target, topk=(1,)):
     with torch.no_grad():
@@ -27,7 +27,8 @@ def main():
     parser.add_argument('--batch_size', type=int, default=128)
     parser.add_argument('--classes', type=int, default=100)
     parser.add_argument('--encoder', type=str, default='encoder.pth' )
-    parser.add_argument('--frontend', type=str, default='models/frontend_best.pth')
+    parser.add_argument('--frontend', type=str, default='models/frontend_8.pth')
+    parser.add_argument('--model', type=str, default='vanilla')
     args = parser.parse_args()
 
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -45,8 +46,11 @@ def main():
     encoder = VGG.encoder
     encoder.load_state_dict(torch.load(args.encoder, map_location=device))  
     encoder = encoder.to(device)
-    model = ModFrontend(encoder, num_classes=args.classes).to(device)
-    #model = VanillaFrontend(encoder, num_classes=args.classes).to(device)
+
+    if args.model == 'vanilla':
+        model = VanillaFrontend(encoder, num_classes=args.classes).to(device)
+    elif args.model == 'mod':
+        model = ModFrontend(encoder, num_classes=args.classes).to(device)
     model.load_state_dict(torch.load(args.frontend, map_location=device))
     model.eval()
 
