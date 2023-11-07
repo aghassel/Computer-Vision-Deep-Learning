@@ -2,6 +2,24 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
+class SELayer(nn.Module):
+    def __init__(self, channel, reduction=16):
+        super(SELayer, self).__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(channel, channel // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(channel // reduction, channel, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        b, c, _, _ = x.size()
+        y = self.avg_pool(x).view(b, c)
+        y = self.fc(y).view(b, c, 1, 1)
+        return x * y.expand_as(x)
+
+
 #based on https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py
 class Bottleneck(nn.Module):
     def __init__(self, in_channels, channels, stride=1, upsample=False):
@@ -46,10 +64,10 @@ class Bottleneck(nn.Module):
 
 #based on https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py
 class DenseFCNResNet152(nn.Module):
-    def __init__(self, input_channels=3, output_channels=2):
+    def __init__(self, input_channels=3, num_classes=100):
         super(DenseFCNResNet152, self).__init__()
         self.input_channels = input_channels
-        self.output_channels = output_channels
+        self.num_classes = num_classes
         ######## resnet encoder #############
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
                                bias=False)       
@@ -115,7 +133,11 @@ class DenseFCNResNet152(nn.Module):
                                     nn.BatchNorm2d(32),
                                     nn.ReLU(inplace=True))
         #conv8
-        self.conv8 = nn.Conv2d(32, output_channels, kernel_size=1, stride=1)
+        self.conv8 = nn.Conv2d(32, 16, kernel_size=1, stride=1)
+
+        self.se_layer = SELayer(16)
+        
+        self.fc = nn.Linear(16, num_classes)
 
 
     def forward(self, x):
@@ -184,11 +206,13 @@ class DenseFCNResNet152(nn.Module):
         up = self.conv7(up)
 
         #conv8
-        out = self.conv8(up)
-        seg_pred = out[:,:1,:,:]
-        radial_pred = out[:,1:,:,:]
+        up = self.conv8(up)
+        
+        up = self.se_layer(up)
 
-        return seg_pred, radial_pred
+        out = self.fc(up.view(up.size(0),-1))
+
+        return out
 
 #based on https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py
 class ResFCNResNet152(nn.Module):
