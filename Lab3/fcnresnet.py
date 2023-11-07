@@ -137,9 +137,13 @@ class DenseFCNResNet152(nn.Module):
 
         self.se_layer = SELayer(16)
         
-        self.fc = nn.Linear(16384, num_classes)
-
-
+        # linear and softmax to output
+        self.fc = nn.Sequential(nn.Linear(16*480*640, 1000),
+                                nn.ReLU(inplace=True),
+                                nn.Linear(1000, num_classes),
+                                nn.Softmax(dim=1))
+        
+        
     def forward(self, x):
         #conv1
         x = self.conv1(x)
