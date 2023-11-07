@@ -7,11 +7,9 @@ import torchvision.transforms as transforms
 import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau, CosineAnnealingLR
-
 import time
 from tqdm import tqdm
 import matplotlib.pyplot as plt
-
 from model import VanillaFrontend, VGG, ModFrontend
 from fcnresnet import DenseFCNResNet152
 
