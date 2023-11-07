@@ -137,7 +137,7 @@ class DenseFCNResNet152(nn.Module):
 
         self.se_layer = SELayer(16)
         
-        self.fc = nn.Linear(16, num_classes)
+        self.fc = nn.Linear(16384, num_classes)
 
 
     def forward(self, x):

@@ -9,6 +9,7 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR, ReduceLROnPlateau, CosineAnnealingLR
 
 import time
+from tqdm import tqdm
 import matplotlib.pyplot as plt
 
 from model import VanillaFrontend, VGG, ModFrontend
@@ -113,8 +114,8 @@ if __name__ == '__main__':
         running_loss = 0.0
         num_batches = 0
         epoch_start = time.time()
-
-        for i, data in enumerate(trainloader, 0):
+        model.train()
+        for i, data in tqdm(enumerate(trainloader, 0), total=len(trainloader), leave=False, desc=f' Train Epoch {epoch+1}'):
 
             inputs, labels = data[0].to(device), data[1].to(device)
 
@@ -143,7 +144,7 @@ if __name__ == '__main__':
         num_batches = 0  
 
         with torch.no_grad():
-            for i, data in enumerate(testloader, 0):
+            for i, data in tqdm(enumerate(testloader, 0), total=len(testloader), leave=False, desc=f'Test Epoch {epoch+1}'):
                 images, labels = data[0].to(device), data[1].to(device) 
                 outputs = model(images)
                 acc1, acc5 = accuracy(outputs, labels, topk=(1, 5))
@@ -154,17 +155,24 @@ if __name__ == '__main__':
         top1_avg_accuracy = top1_accuracy / num_batches
         top5_avg_accuracy = top5_accuracy / num_batches
 
+        top1_error = 100 - top1_avg_accuracy
+        top5_error = 100 - top5_avg_accuracy
+
+        print(f'Epoch {epoch+1}, Top 1 error: {top1_error:.2f}%, Top 5 error: {top5_error:.2f}%')
+
         if top1_avg_accuracy > best_top1_accuracy:
+            print ('Saving best model')
             best_top1_accuracy = top1_avg_accuracy
             best_top5_accuracy = top5_avg_accuracy
             best_model_state = model.state_dict()
-        print(f'Epoch {epoch+1}, Top 1 accuracy: {top1_avg_accuracy:.2f}%, Top 5 accuracy: {top5_avg_accuracy:.2f}%')
-        model.train()
+            torch.save(best_model_state, args.frontend)
+            
+  
+     
 
     print('Finished Training')
     print(f'Total time taken: {total_time:.3f} seconds')
     
-    torch.save(best_model_state, args.frontend)
     print(f"Best model saved with Top-1 accuracy: {best_top1_accuracy:.2f}%, Top-5 accuracy: {best_top5_accuracy:.2f}%")
         
     plot_loss(losses, args.save_plot)
