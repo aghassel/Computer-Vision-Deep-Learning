@@ -12,6 +12,7 @@ import time
 import matplotlib.pyplot as plt
 
 from model import VanillaFrontend, VGG, ModFrontend
+from fcnresnet import DenseFCNResNet152
 
 def plot_loss(loss_list, save_path):
     plt.figure()
@@ -47,7 +48,7 @@ if __name__ == '__main__':
     parser.add_argument('--encoder', type=str, default='encoder.pth')
     parser.add_argument('--frontend', type=str, default=f'frontend.pth')
     parser.add_argument('--save_plot', type=str, default=f'loss.png')
-    parser.add_argument('--model', type=str, default='vanilla')
+    parser.add_argument('--model', type=str, default='resnet')
     args = parser.parse_args()
 
     print('Parameters')
@@ -92,7 +93,8 @@ if __name__ == '__main__':
         model = VanillaFrontend(encoder, num_classes=args.classes).to(device)
     elif args.model == 'mod':
         model = ModFrontend(encoder, num_classes=args.classes).to(device)
-    model.to(device)
+    elif args.model == 'resnet':
+        model = DenseFCNResNet152(encoder, num_classes=args.classes).to(device)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
