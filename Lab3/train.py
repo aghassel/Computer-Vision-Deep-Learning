@@ -108,6 +108,7 @@ if __name__ == '__main__':
     best_model_state = None
 
     for epoch in range(args.epochs):
+        print(f'Epoch {epoch+1}')
         
         running_loss = 0.0
         num_batches = 0
@@ -131,7 +132,7 @@ if __name__ == '__main__':
         
         avg_loss = running_loss / num_batches
         losses.append(avg_loss)
-        print(f'Epoch {epoch+1}, Training loss: {avg_loss:.3f}, Time taken: {epoch_end - epoch_start:.3f} seconds')
+        print(f'Training loss: {avg_loss:.3f}, Time taken: {epoch_end - epoch_start:.3f} seconds')
         total_time += epoch_end - epoch_start
         scheduler.step()
 
@@ -156,7 +157,7 @@ if __name__ == '__main__':
         top1_error = 100 - top1_avg_accuracy
         top5_error = 100 - top5_avg_accuracy
 
-        print(f'Epoch {epoch+1}, Top 1 error: {top1_error:.2f}%, Top 5 error: {top5_error:.2f}%')
+        print(f'Top 1 error: {top1_error:.2f}%, Top 5 error: {top5_error:.2f}%')
 
         if top1_avg_accuracy > best_top1_accuracy:
             print ('Saving best model')
@@ -164,8 +165,7 @@ if __name__ == '__main__':
             best_top5_accuracy = top5_avg_accuracy
             best_model_state = model.state_dict()
             torch.save(best_model_state, args.frontend)
-            
-  
+        print (' ')
      
 
     print('Finished Training')
