@@ -63,9 +63,9 @@ class Bottleneck(nn.Module):
         return out
 
 #based on https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py
-class DenseFCNResNet152(nn.Module):
+class ResNet50(nn.Module):
     def __init__(self, input_channels=3, num_classes=100):
-        super(DenseFCNResNet152, self).__init__()
+        super(ResNet50, self).__init__()
         self.input_channels = input_channels
         self.num_classes = num_classes
         ######## resnet encoder #############
@@ -75,29 +75,29 @@ class DenseFCNResNet152(nn.Module):
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=3, stride=2, padding=1) 
         #conv2
-        self.block1up = Bottleneck(64, 64, stride=1, upsample=True)
+        self.block1 = Bottleneck(64, 64, stride=1, upsample=False)
         layers = []
         for i in range(1,3):
             layers.append(Bottleneck(256, 64, stride=1))
-        self.block1 = nn.Sequential(*layers)
-        #conv3
-        self.block2up = Bottleneck(256, 128, stride=2, upsample=True)
-        layers = []
-        for i in range(1,8):
-            layers.append(Bottleneck(512, 128, stride=1))
         self.block2 = nn.Sequential(*layers)
-        #conv4
-        self.block3up = Bottleneck(512, 256, stride=2, upsample=True)
+        #conv3
+        self.block3 = Bottleneck(256, 128, stride=2, upsample=True)
         layers = []
-        for i in range(1,36):
+        for i in range(1,4):
+            layers.append(Bottleneck(512, 128, stride=1))
+        self.block4 = nn.Sequential(*layers)
+        #conv4
+        self.block5 = Bottleneck(512, 256, stride=2, upsample=True)
+        layers = []
+        for i in range(1,6):
             layers.append(Bottleneck(1024, 256, stride=1))
-        self.block3 = nn.Sequential(*layers)
+        self.block6 = nn.Sequential(*layers)
         #conv5
-        self.block4up = Bottleneck(1024, 512, stride=2, upsample=True)
+        self.block7 = Bottleneck(1024, 512, stride=2, upsample=True)
         layers = []
         for i in range(1,3):
             layers.append(Bottleneck(2048, 512, stride=1))
-        self.block4 = nn.Sequential(*layers)
+        self.block8 = nn.Sequential(*layers)
         #conv6
         self.conv6 = nn.Conv2d(2048, 1024, kernel_size=3, stride=1, padding=1)
         self.bn6 = nn.BatchNorm2d(1024)
@@ -109,40 +109,37 @@ class DenseFCNResNet152(nn.Module):
                                     nn.ReLU(inplace=True))
         self.up5 = nn.Upsample(scale_factor=2, mode='bilinear', align_corners = False)
         #conv_up4
-        self.conv_up4 = nn.Sequential(nn.Conv2d(1024+1024, 512, kernel_size=3, stride=1, padding=1),
+        self.conv_up4 = nn.Sequential(nn.Conv2d(1024+512, 512, kernel_size=3, stride=1, padding=1),
                                     nn.BatchNorm2d(512),
                                     nn.ReLU(inplace=True))
         self.up4 = nn.Upsample(scale_factor=2, mode='bilinear', align_corners = False)
         #conv_up3
-        self.conv_up3 = nn.Sequential(nn.Conv2d(512+512, 256, kernel_size=3, stride=1, padding=1),
+        self.conv_up3 = nn.Sequential(nn.Conv2d(512+256, 256, kernel_size=3, stride=1, padding=1),
                                     nn.BatchNorm2d(256),
                                     nn.ReLU(inplace=True))
         self.up3 = nn.Upsample(scale_factor=2, mode='bilinear', align_corners = False)
         #conv_up2
-        self.conv_up2 = nn.Sequential(nn.Conv2d(256+256, 128, kernel_size=3, stride=1, padding=1),
-                                    nn.BatchNorm2d(128),
+        self.conv_up2 = nn.Sequential(nn.Conv2d(256+64, 64, kernel_size=3, stride=1, padding=1),
+                                    nn.BatchNorm2d(64),
                                     nn.ReLU(inplace=True))
         self.up2 = nn.Upsample(scale_factor=2, mode='bilinear', align_corners = False)
         #conv_up1
-        self.conv_up1 = nn.Sequential(nn.Conv2d(64+128, 64, kernel_size=3, stride=1, padding=1),
-                                    nn.BatchNorm2d(64),
-                                    nn.ReLU(inplace=True))
-        self.up1 = nn.Upsample(scale_factor=2, mode='bilinear', align_corners = False)
-        #conv7
-        self.conv7 = nn.Sequential(nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
+        self.conv_up1 = nn.Sequential(nn.Conv2d(64, 32, kernel_size=3, stride=1, padding=1),
                                     nn.BatchNorm2d(32),
                                     nn.ReLU(inplace=True))
         #conv8
         self.conv8 = nn.Conv2d(32, 16, kernel_size=1, stride=1)
 
-        self.se_layer = SELayer(16)
+        self.se_layer1 = SELayer(64)
+        self.se_layer2 = SELayer(256)
+        self.se_layer3 = SELayer(512)
+        self.se_layer4 = SELayer(1024)
+        self.se_layer5 = SELayer(2048)
         
-        # linear and softmax to output
-        self.fc = nn.Sequential(nn.Linear(16*480*640, 1000),
-                                nn.ReLU(inplace=True),
-                                nn.Linear(1000, num_classes),
-                                nn.Softmax(dim=1))
-        
+        self.fc1 = nn.Linear(16*480*640, num_classes)
+   
+        self.softmax = nn.Softmax(dim=1)
+                
         
     def forward(self, x):
         #conv1
@@ -153,26 +150,29 @@ class DenseFCNResNet152(nn.Module):
         #print(x2s.size())
 
         #conv2
-        x2s = self.block1up(x2s)
         x2s = self.block1(x2s)
+        x2s = self.block2(x2s)
         #print(x2s.size())
 
         #conv3
-        x4s = self.block2up(x2s)
-        #for i in range(1,8):
-        x4s = self.block2(x4s)
+        x4s = self.block3(x2s)
+        x4s = self.se_layer1(x4s)
+        for i in range(1,4):
+            x4s = self.block4(x4s)
         #print(x4s.size())
 
         #conv4
-        x8s = self.block3up(x4s)
-        #for i in range(1,36):
-        x8s = self.block3(x8s)
+        x8s = self.block5(x4s)
+        x8s = self.se_layer2(x8s)
+        for i in range(1,6):
+            x8s = self.block6(x8s)
         #print(x8s.size())
 
         #conv5
-        x16s = self.block4up(x8s)
-        #for i in range(1,3):
-        x16s = self.block4(x16s)
+        x16s = self.block7(x8s)
+        x16s = self.se_layer3(x16s)
+        for i in range(1,3):
+            x16s = self.block8(x16s)
         #print(x16s.size())
 
         #conv6
@@ -202,21 +202,17 @@ class DenseFCNResNet152(nn.Module):
         #print(up.size())
 
         #up1
-        up = self.conv_up1(torch.cat((up,x),1))
-        up = self.up1(up)
+        up = self.conv_up1(up)
+        up = self.conv8(up)
+        up = self.se_layer4(up)
+        up = self.relu(up)
         #print(up.size())
 
-        #conv7
-        up = self.conv7(up)
+        up = up.view(-1, 16*480*640)
+        up = self.fc1(up)
+        up = self.softmax(up)
 
-        #conv8
-        up = self.conv8(up)
-        
-        up = self.se_layer(up)
-
-        out = self.fc(up.view(up.size(0),-1))
-
-        return out
+        return up
 
 #based on https://github.com/pytorch/vision/blob/main/torchvision/models/resnet.py
 class ResFCNResNet152(nn.Module):

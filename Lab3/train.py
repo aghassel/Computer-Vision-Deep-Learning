@@ -11,7 +11,7 @@ import time
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 from model import VanillaFrontend, VGG, ModFrontend
-from fcnresnet import DenseFCNResNet152
+from fcnresnet import ResNet50
 
 def plot_loss(loss_list, save_path):
     plt.figure()
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     elif args.model == 'mod':
         model = ModFrontend(encoder, num_classes=args.classes).to(device)
     elif args.model == 'resnet':
-        model = DenseFCNResNet152(encoder, num_classes=args.classes).to(device)
+        model = ResNet50(encoder, num_classes=args.classes).to(device)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=0.9)
