@@ -9,6 +9,9 @@ from model import ModFrontend
 from utils import plot_loss 
 from tqdm import tqdm
 
+import warnings
+warnings.filterwarnings("ignore")
+
 
 def train(args):
     num_classes = 1
@@ -18,8 +21,10 @@ def train(args):
     else:
         device = torch.device('cpu')
     print('Found device ', device)
-
+    
+    
     transform = transforms.Compose([
+        transforms.Resize((150, 150)),  
         transforms.ToTensor(),
         transforms.Normalize((0.5,), (0.5,))
     ])
@@ -40,11 +45,11 @@ def train(args):
 
     train_dataset = YODADataset(args.data_dir, training=True, transform=transform)
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
 
     test_dataset = YODADataset(args.data_dir, training=False, transform=transform)
 
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
 
     train_losses = []
     test_losses = []
@@ -58,8 +63,8 @@ def train(args):
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
             output = model(data)
-            # print(output.shape)
-            # print(target.shape)
+            #print(output.shape)
+            #print(target.shape)
             loss = criterion(output, target.unsqueeze(1).float())
             loss.backward()
             optimizer.step()
@@ -96,7 +101,7 @@ if __name__ == '__main__':
     parser.add_argument('--momentum', type=float, default=0.9, help='SGD momentum (default: 0.9)')
     parser.add_argument('--data_dir', type=str, default='data/Kitti8_ROIs/', help='path to dataset')
     parser.add_argument('--save_dir', type=str, default='models/', help='path to save trained model')
-    parser.add_argument('--cuda', action='store_true', default=False, help='enables CUDA training')
+    parser.add_argument('--cuda', action='store_true', default=True, help='enables CUDA training')
     parser.add_argument('--loss_plot', type=str, default='resnet', help='path to save loss plots')
     args = parser.parse_args()
 
