@@ -89,7 +89,7 @@ def main():
             use_cuda = True
 
     labels = []
-
+    print ('Cuda available: ', torch.cuda.is_available())
     device = 'cpu'
     if use_cuda == True and torch.cuda.is_available():
         device = 'cuda'
