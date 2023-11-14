@@ -7,7 +7,7 @@ class YODADataset(Dataset):
     def __init__(self, dir, training=True, transform=None):
         self.dir = dir
         self.training = training
-        if self.training == False:
+        if self.training == True:
             self.dir = os.path.join(dir, 'train')
         else:
             self.dir = os.path.join(dir, 'test')

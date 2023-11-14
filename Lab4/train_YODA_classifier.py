@@ -31,7 +31,7 @@ def train(args):
 
     if args.model_name == 'resnet18':
         model = models.resnet18(pretrained=True)
-        model.fc = torch.nn.Linear(512, 1)
+        model.fc = torch.nn.Linear(512, num_classes)
     elif args.model_name == 'mod':
         model = ModFrontend(num_classes=num_classes)
     else:
@@ -45,11 +45,11 @@ def train(args):
 
     train_dataset = YODADataset(args.data_dir, training=True, transform=transform)
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
     test_dataset = YODADataset(args.data_dir, training=False, transform=transform)
 
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=2)
 
     train_losses = []
     test_losses = []
@@ -59,7 +59,7 @@ def train(args):
         train_loss = 0.0
         test_loss = 0.0
         model.train()
-        for batch_idx, (data, target) in tqdm(enumerate(train_loader), total=len(train_loader), desc='Training: ', unit='batch', leave='false'):
+        for batch_idx, (data, target) in tqdm(enumerate(train_loader), total=len(train_loader), desc='Training: ', unit='batch', leave=False):
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
             output = model(data)
@@ -74,7 +74,7 @@ def train(args):
         print('Train Loss: ', train_loss)
 
         model.eval()
-        for batch_idx, (data, target) in tqdm(enumerate(test_loader), total=len(test_loader), desc='Testing: ', unit='batch', leave='false'):
+        for batch_idx, (data, target) in tqdm(enumerate(test_loader), total=len(test_loader), desc='Testing: ', unit='batch', leave=False):
             data, target = data.to(device), target.to(device)
             output = model(data)
             loss = criterion(output, target.unsqueeze(1).float())
@@ -88,14 +88,16 @@ def train(args):
             best_test_acc = test_loss
             torch.save(model.state_dict(), os.path.join(args.save_dir, args.model_name+'.pth'))
             print('Saved model')
+        print(' ')
+        plot_loss(train_losses, test_losses, args.loss_plot)
 
 
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Train YODA classifier')
-    parser.add_argument('--batch_size', type=int, default=32, help='input batch size for training (default: 32)')
-    parser.add_argument('--epochs', type=int, default=10, help='number of epochs to train (default: 10)')
+    parser.add_argument('--batch_size', type=int, default=75, help='input batch size for training (default: 32)')
+    parser.add_argument('--epochs', type=int, default=50, help='number of epochs to train (default: 10)')
     parser.add_argument('--lr', type=float, default=0.001, help='learning rate (default: 0.001)')
     parser.add_argument('--model_name', type=str, default='resnet18', help='model name (default: resnet18)')
     parser.add_argument('--momentum', type=float, default=0.9, help='SGD momentum (default: 0.9)')
