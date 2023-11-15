@@ -83,8 +83,6 @@ def train(args):
             data, target = data.to(device), target.to(device)
             optimizer.zero_grad()
             output = model(data)
-            #print(output.shape)
-            #print(target.shape)
             loss = criterion(output, target.unsqueeze(1).float())
             loss.backward()
             optimizer.step()

@@ -2,7 +2,7 @@ import torchvision.transforms as transforms
 import os
 from torch.utils.data import Dataset
 from PIL import Image
-
+import numpy as np
 class YODADataset(Dataset):
     def __init__(self, dir, training=True, transform=None):
         self.dir = dir
@@ -31,6 +31,8 @@ class YODADataset(Dataset):
         filename = self.img_files[idx]
         img_path = os.path.join(self.dir, filename)
         image = Image.open(img_path).convert('RGB')
+        #image = np.array(image).astype(np.float32)
+        #image = Image.fromarray(image.astype('uint8'), 'RGB')
         if image is None:
             print(f"Warning: Could not read image {filename}")
             return None, None
