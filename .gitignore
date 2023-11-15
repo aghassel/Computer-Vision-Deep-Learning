@@ -13,3 +13,5 @@ Lab4/data/
 Lab4/Kitti/__pycache__/KittiDataset.cpython-311.pyc
 Lab4/Kitti/__pycache__/KittiAnchors.cpython-311.pyc
 Lab4/__pycache__/
+Lab4/models/resnet18.pth
+Lab4/models/mod.pth
