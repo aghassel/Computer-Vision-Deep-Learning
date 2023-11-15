@@ -61,17 +61,17 @@ def train(args):
 
     train_dataset = YODADataset(args.data_dir, training=True, transform=transform_train)
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=3)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.threads)
 
     test_dataset = YODADataset(args.data_dir, training=False, transform=transform)
 
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=3)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.threads)
 
     train_losses = []
     test_losses = []
     best_test_acc = 100000
 
-    scheduler = StepLR(optimizer, step_size=1, gamma=0.1)
+    scheduler = StepLR(optimizer, step_size=5, gamma=0.95)
 
     for epoch in range(args.epochs):
         print('Epoch: ', epoch)
@@ -130,6 +130,7 @@ if __name__ == '__main__':
     parser.add_argument('--save_dir', type=str, default='models/', help='path to save trained model')
     parser.add_argument('--cuda', type=bool, default=True, help='use cuda?')
     parser.add_argument('--loss_plot_dir', type=str, default='resnet', help='path to save loss plots')
+    parser.add_argument('--threads', type=int, default=6, help='number of threads for data loader to use')
     args = parser.parse_args()
 
     plot_dir = os.path.join(args.loss_plot_dir, args.model_name)
@@ -143,6 +144,7 @@ if __name__ == '__main__':
     print('\tdata_dir: ', args.data_dir)
     print('\tsave_dir: ', args.save_dir)
     print('\tcuda: ', args.cuda)
+    print('\tthreads: ', args.threads)
     print('\tloss_plot: ', plot_dir)
     print('\n')
 
