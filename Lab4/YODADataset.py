@@ -2,7 +2,8 @@ import torchvision.transforms as transforms
 import os
 from torch.utils.data import Dataset
 from PIL import Image
-import numpy as np
+
+
 class YODADataset(Dataset):
     def __init__(self, dir, training=True, transform=None):
         self.dir = dir
@@ -15,28 +16,23 @@ class YODADataset(Dataset):
         self.label_dir = os.path.join(self.dir, 'labels.txt')
         
         self.transform = transform
-        self.img_files = []
-        self.class_label = {}
+        self.data = [] 
 
         with open(self.label_dir, 'r') as f:
             for line in f:
                 filename, label, _ = line.strip().split(' ')
-                self.img_files.append(filename)
-                self.class_label[filename] = label 
+                full_path = os.path.join(self.dir, filename)
+                self.data.append((full_path, int(label)))  
 
     def __len__(self):
-        return len(self.img_files)
+        return len(self.data)
 
     def __getitem__(self, idx):
-        filename = self.img_files[idx]
-        img_path = os.path.join(self.dir, filename)
-        image = Image.open(img_path).convert('RGB')
-        #image = np.array(image).astype(np.float32)
-        #image = Image.fromarray(image.astype('uint8'), 'RGB')
+        full_path, label = self.data[idx]
+        image = Image.open(full_path).convert('RGB')
         if image is None:
-            print(f"Warning: Could not read image {filename}")
+            print(f"Warning: Could not read image {full_path}")
             return None, None
         if self.transform:
             image = self.transform(image)
-        label = int(self.class_label[filename])
         return image, label

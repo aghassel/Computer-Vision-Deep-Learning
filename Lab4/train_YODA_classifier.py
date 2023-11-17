@@ -9,45 +9,48 @@ from utils import plot_loss
 from tqdm import tqdm
 import time
 from torch.optim.lr_scheduler import StepLR
-
+import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore")
 
 
+transform = transforms.Compose([
+    transforms.Resize((150, 150)),  
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,))
+])
+transform_train = transforms.Compose([
+    transforms.Resize((150, 150)),
+    transforms.RandomCrop(32, padding=4),  
+    transforms.RandomHorizontalFlip(),  
+    transforms.RandomRotation(15),  
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  
+    transforms.ToTensor(),  
+    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),  
+])
+
 def train(args):
     num_classes = 1
+    mem_pin = False
     if args.cuda and torch.cuda.is_available():
-
         device = torch.device('cuda')
+        mem_pin = True
     else:
         device = torch.device('cpu')
     print('Found device ', device)
     
     plot_dir = os.path.join(args.loss_plot_dir, args.model_name)
     
-    transform = transforms.Compose([
-        transforms.Resize((150, 150)),  
-        transforms.ToTensor(),
-        transforms.Normalize((0.5,), (0.5,))
-    ])
-
-    transform_train = transforms.Compose([
-        transforms.Resize((150, 150)),
-        transforms.RandomCrop(32, padding=4),  
-        transforms.RandomHorizontalFlip(),  
-        transforms.RandomRotation(15),  
-        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  
-        transforms.ToTensor(),  
-        transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),  
-    ])
 
     if args.model_name == 'resnet18':
         model = models.resnet18(pretrained=True)
         model.fc = torch.nn.Linear(512, num_classes)
+        print('Using resnet18')
     elif args.model_name == 'mod':
         encoder = VGG.encoder
-        encoder.load_state_dict(torch.load('encoder.pth', map_location=device))
+        #encoder.load_state_dict(torch.load('encoder.pth', map_location=device))
         model = ModFrontend(encoder, num_classes=num_classes)
+        print('Using mod')
     else:
         print('Model not found, using resnet18')
         model = models.resnet18(pretrained=True)
@@ -57,15 +60,17 @@ def train(args):
     model.to(device)
 
     optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
-    criterion = torch.nn.BCEWithLogitsLoss()
 
-    train_dataset = YODADataset(args.data_dir, training=True, transform=transform_train)
+    weight = torch.tensor([args.pos_weight]).to(device)
+    criterion = torch.nn.BCEWithLogitsLoss(pos_weight=weight)
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.threads)
+    train_dataset = YODADataset(args.data_dir, training=True, transform=transform)
+
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.threads, pin_memory=mem_pin)
 
     test_dataset = YODADataset(args.data_dir, training=False, transform=transform)
 
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True, num_workers=args.threads)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False, num_workers=args.threads, pin_memory=mem_pin)
 
     train_losses = []
     test_losses = []
@@ -131,15 +136,17 @@ if __name__ == '__main__':
     parser.add_argument('--cuda', type=bool, default=True, help='use cuda?')
     parser.add_argument('--loss_plot_dir', type=str, default='resnet', help='path to save loss plots')
     parser.add_argument('--threads', type=int, default=6, help='number of threads for data loader to use')
+    parser.add_argument('--pos_weight', type=float, default=2.0, help='positive weight for BCEWithLogitsLoss')
     args = parser.parse_args()
 
     plot_dir = os.path.join(args.loss_plot_dir, args.model_name)
 
     print('Parameters:')
+    print('\tmodel_name: ', args.model_name)
     print('\tbatch_size: ', args.batch_size)
     print('\tepochs: ', args.epochs)
     print('\tlr: ', args.lr)
-    print('\tmodel_name: ', args.model_name)
+    print('\tpos_weight: ', args.pos_weight)
     print('\tmomentum: ', args.momentum)
     print('\tdata_dir: ', args.data_dir)
     print('\tsave_dir: ', args.save_dir)

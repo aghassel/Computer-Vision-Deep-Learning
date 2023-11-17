@@ -39,7 +39,7 @@ class VGG:
 )
 
 class VanillaFrontend(nn.Module):
-    def __init__(self, encoder, num_classes=100):
+    def __init__(self, encoder):
         super(VanillaFrontend, self).__init__()
 
         self.encoder = encoder
@@ -47,13 +47,11 @@ class VanillaFrontend(nn.Module):
         self.frontend = nn.Sequential(
             nn.AdaptiveAvgPool2d((1, 1)),
             nn.Flatten(),
-            nn.Linear(512, num_classes)
+            nn.Linear(512, 1)
         )
 
     def forward(self, x):
-
-        with torch.no_grad():
-            x = self.encoder(x)
+        x = self.encoder(x)
         return self.frontend(x)
 
 class SqueezeExcitationBlock(nn.Module):
@@ -72,7 +70,7 @@ class SqueezeExcitationBlock(nn.Module):
         return x * y.expand_as(x)
 
 class ModFrontend(nn.Module):
-    def __init__(self, encoder, num_classes=100):
+    def __init__(self, encoder):
         
         super().__init__()
         self.encoder = encoder
@@ -92,7 +90,8 @@ class ModFrontend(nn.Module):
             nn.Dropout(p=0.3),
         )
 
-        self.classifier = nn.Linear(512, num_classes)
+        self.classifier = nn.Linear(512, 1)
+        
         self.match_dimension = nn.Linear(512, 512)
 
     def forward(self, x):
