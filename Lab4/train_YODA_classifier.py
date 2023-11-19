@@ -14,23 +14,26 @@ import warnings
 warnings.filterwarnings("ignore")
 
 
+
 transform = transforms.Compose([
     transforms.Resize((150, 150)),  
     transforms.ToTensor(),
-    transforms.Normalize((0.5,), (0.5,))
-])
-transform_train = transforms.Compose([
-    transforms.Resize((150, 150)),
-    transforms.RandomCrop(32, padding=4),  
-    transforms.RandomHorizontalFlip(),  
-    transforms.RandomRotation(15),  
-    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  
-    transforms.ToTensor(),  
-    transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),  
+    transforms.Normalize([0.3656, 0.3844, 0.3725], [0.4194, 0.4075, 0.4239])
 ])
 
+
+train_transforms = transforms.Compose([
+    transforms.Resize((150, 150)),
+    transforms.RandomRotation(10),  
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomResizedCrop(150, scale=(0.8, 1.0)),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  
+    transforms.ToTensor(),
+    transforms.Normalize([0.3656, 0.3844, 0.3725], [0.4194, 0.4075, 0.4239])
+])
+
+
 def train(args):
-    num_classes = 1
     mem_pin = False
     if args.cuda and torch.cuda.is_available():
         device = torch.device('cuda')
@@ -39,27 +42,27 @@ def train(args):
         device = torch.device('cpu')
     print('Found device ', device)
     
-    plot_dir = os.path.join(args.loss_plot_dir, args.model_name)
+    plot_dir = os.path.join(args.loss_plot_dir, args.model_name + '2')
     
 
     if args.model_name == 'resnet18':
         model = models.resnet18(pretrained=True)
-        model.fc = torch.nn.Linear(512, num_classes)
+        model.fc = torch.nn.Linear(512, 1)
         print('Using resnet18')
     elif args.model_name == 'mod':
         encoder = VGG.encoder
-        #encoder.load_state_dict(torch.load('encoder.pth', map_location=device))
-        model = ModFrontend(encoder, num_classes=num_classes)
+        encoder.load_state_dict(torch.load('encoder.pth', map_location=device))
+        model = ModFrontend(encoder)
         print('Using mod')
     else:
         print('Model not found, using resnet18')
         model = models.resnet18(pretrained=True)
-        model.fc = torch.nn.Linear(512, num_classes)
+        model.fc = torch.nn.Linear(512, 1)
         
     
     model.to(device)
 
-    optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+    optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
 
     weight = torch.tensor([args.pos_weight]).to(device)
     criterion = torch.nn.BCEWithLogitsLoss(pos_weight=weight)
@@ -116,7 +119,7 @@ def train(args):
 
         if test_loss < best_test_acc:
             best_test_acc = test_loss
-            torch.save(model.state_dict(), os.path.join(args.save_dir, args.model_name+'.pth'))
+            torch.save(model.state_dict(), os.path.join(args.save_dir, args.model_name+'2.pth'))
             print('Saved model')
         print(' ')
         plot_loss(train_losses, test_losses, plot_dir)
@@ -136,23 +139,25 @@ if __name__ == '__main__':
     parser.add_argument('--cuda', type=bool, default=True, help='use cuda?')
     parser.add_argument('--loss_plot_dir', type=str, default='resnet', help='path to save loss plots')
     parser.add_argument('--threads', type=int, default=6, help='number of threads for data loader to use')
-    parser.add_argument('--pos_weight', type=float, default=2.0, help='positive weight for BCEWithLogitsLoss')
+    parser.add_argument('--pos_weight', type=float, default=3.0348, help='positive weight for BCEWithLogitsLoss (default: 3.0348, based off dataset imbalance)')
+    parser.add_argument('--weight_decay', type=float, default=0.0001, help='weight decay (default: 0.0001)')
     args = parser.parse_args()
 
     plot_dir = os.path.join(args.loss_plot_dir, args.model_name)
 
     print('Parameters:')
-    print('\tmodel_name: ', args.model_name)
-    print('\tbatch_size: ', args.batch_size)
-    print('\tepochs: ', args.epochs)
-    print('\tlr: ', args.lr)
-    print('\tpos_weight: ', args.pos_weight)
-    print('\tmomentum: ', args.momentum)
-    print('\tdata_dir: ', args.data_dir)
-    print('\tsave_dir: ', args.save_dir)
-    print('\tcuda: ', args.cuda)
-    print('\tthreads: ', args.threads)
-    print('\tloss_plot: ', plot_dir)
+    print('\tmodel_name:\t ', args.model_name)
+    print('\tbatch_size:\t ', args.batch_size)
+    print('\tepochs:\t\t ', args.epochs)
+    print('\tlr:\t\t ', args.lr)
+    print('\tpos_weight:\t ', args.pos_weight)
+    print('\tmomentum:\t ', args.momentum)
+    print('\tweight_decay:\t ', args.weight_decay)
+    print('\tdata_dir:\t ', args.data_dir)
+    print('\tsave_dir:\t ', args.save_dir)
+    print('\tcuda:\t\t ', args.cuda)
+    print('\tthreads:\t ', args.threads)
+    print('\tloss_plot:\t ', plot_dir)
     print('\n')
 
     train(args)
