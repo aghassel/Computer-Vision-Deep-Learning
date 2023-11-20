@@ -11,6 +11,7 @@ import time
 from torch.optim.lr_scheduler import StepLR
 import matplotlib.pyplot as plt
 import warnings
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 warnings.filterwarnings("ignore")
 
 
@@ -31,6 +32,7 @@ train_transforms = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize([0.3656, 0.3844, 0.3725], [0.4194, 0.4075, 0.4239])
 ])
+
 
 
 def train(args):
@@ -80,6 +82,7 @@ def train(args):
     best_test_acc = 100000
 
     scheduler = StepLR(optimizer, step_size=5, gamma=0.95)
+    reduce_lr_scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=5, verbose=True)
 
     for epoch in range(args.epochs):
         print('Epoch: ', epoch)
@@ -114,7 +117,8 @@ def train(args):
         test_losses.append(test_loss)
         print('Test Loss: ', test_loss)
         scheduler.step()          
- 
+        reduce_lr_scheduler.step(test_loss)  
+    
         print('Time: ', end-start, 's')
 
         if test_loss < best_test_acc:
