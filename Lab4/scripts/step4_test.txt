@@ -1,0 +1,1 @@
+python test_YODA.py --model_name mod2 --data_dir data/Kitti8/ --save_imgs True --save_dir images/ --cuda True

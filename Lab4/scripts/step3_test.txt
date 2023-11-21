@@ -1,0 +1,1 @@
+python test_YODA_classifier.py --batch_size 75 --model_name mod2 --data_dir your_data_directory --cuda True --threads 6
