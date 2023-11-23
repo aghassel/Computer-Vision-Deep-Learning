@@ -26,6 +26,7 @@ class YODADataset(Dataset):
         
         self.label_dir = os.path.join(self.dir, 'labels.txt')
         
+        
         self.transform = transform
         self.data = [] 
 
