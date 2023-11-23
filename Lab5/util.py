@@ -28,3 +28,4 @@ def plot_loss(train_loss, val_loss, save_path):
     plt.ylabel('loss')
     plt.legend()
     plt.savefig(save_path)
+
