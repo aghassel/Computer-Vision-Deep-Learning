@@ -7,24 +7,20 @@ from torch.optim.lr_scheduler import StepLR
 import matplotlib.pyplot as plt
 import warnings
 from torch.optim.lr_scheduler import ReduceLROnPlateau
-from pet_dataset import PetDataset
+from pet_dataset import PetDataset, train_transform, test_transform
 
 warnings.filterwarnings("ignore")
-
-pet_dataset_mean = [0.4837, 0.4510, 0.3948]
-pet_dataset_std = [0.2247, 0.2216, 0.2228]
-
 
 
 def train(args):
     device = torch.device("cuda" if args.cuda else "cpu")
     print('Using device:', device)
 
-    train_dataset = PetDataset(args.data_dir, 'train')
-    test_dataset = PetDataset(args.data_dir, 'test')
+    train_dataset = PetDataset(args.data_dir, 'train', train_transform)
+    test_dataset = PetDataset(args.data_dir, 'test', test_transform)
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4)
-    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True,  num_workers=4)
+    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
+    test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch_size, shuffle=True,  num_workers=4, pin_memory=True)
 
     # model being used to return x and y pos of pet nose
     if args.arch == 'vgg16':

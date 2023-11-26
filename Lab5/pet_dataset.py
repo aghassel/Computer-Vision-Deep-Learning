@@ -11,6 +11,21 @@ from util import calculate_mean_std
 pet_dataset_mean = [0.4837, 0.4510, 0.3948]
 pet_dataset_std = [0.2247, 0.2216, 0.2228]
 
+train_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(10),
+    transforms.ToTensor(),
+    transforms.Normalize(pet_dataset_mean, pet_dataset_std)
+])
+
+test_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(pet_dataset_mean, pet_dataset_std)
+])
+
+
 class PetDataset(Dataset):
     def __init__ (self, dir, training=True, transform=None):
         self.dir = os.path.join(dir, 'images')
