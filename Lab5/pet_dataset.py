@@ -60,6 +60,9 @@ class PetDataset(Dataset):
             image = self.transform(image)
         
         label = self.labels[index]
+        label = torch.tensor(np.array(label))
+
+
         
         return image, label
 
