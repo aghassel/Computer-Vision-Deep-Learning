@@ -8,6 +8,7 @@ import matplotlib.pyplot as plt
 import warnings
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from pet_dataset import PetDataset, train_transform, test_transform
+from util import plot_loss
 
 warnings.filterwarnings("ignore")
 
@@ -33,6 +34,7 @@ def train(args):
         raise Exception('Architecture not supported!')
     
     model = model.to(device)
+
     criterion = torch.nn.MSELoss()
 
     optim = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
@@ -72,6 +74,7 @@ def train(args):
         scheduler.step(test_loss)
         train_losses.append(train_loss)
         test_losses.append(test_loss)
+        plot_loss(train_losses, test_losses, os.path.join(args.save_dir, 'loss.png'))
         print('Train loss: %.4f, Test loss: %.4f' % (train_loss, test_loss))
         print('Time: %.2fs' % (time.time() - start_time))
         print()

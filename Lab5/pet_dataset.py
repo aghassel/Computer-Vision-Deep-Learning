@@ -13,8 +13,7 @@ pet_dataset_std = [0.2247, 0.2216, 0.2228]
 
 train_transform = transforms.Compose([
     transforms.Resize((224, 224)),
-    transforms.RandomHorizontalFlip(),
-    transforms.RandomRotation(10),
+    transforms.ColorJitter(brightness=0.1, contrast=0.1, saturation=0.1, hue=0.1),
     transforms.ToTensor(),
     transforms.Normalize(pet_dataset_mean, pet_dataset_std)
 ])
