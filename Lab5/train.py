@@ -13,6 +13,7 @@ import argparse
 warnings.filterwarnings("ignore")
 
 def train(args):
+
     # mean and std are generated from pet_dataset.py
     train_mean = [0.4789, 0.4476, 0.3948]
     train_std = [0.2259, 0.2229, 0.2255]
@@ -42,7 +43,7 @@ def train(args):
             param.requires_grad = False
         model.fc = torch.nn.Linear(model.fc.in_features, 2)
     else:
-        raise ValueError('Architecture not supported!')
+        raise ValueError('Only VGG16 and ResNet18 are supported!')
 
     model = model.to(device)
     criterion = torch.nn.MSELoss()
@@ -57,7 +58,6 @@ def train(args):
         print('Epoch:', epoch)
         start_time = time.time()
 
-        # Training phase
         model.train()
         train_loss = 0
         for batch_idx, (data, target) in enumerate(tqdm(train_loader)):
@@ -100,13 +100,13 @@ def train(args):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--data_dir', type=str, default='data', help='dataset directory')
-    parser.add_argument('--save_dir', type=str, default='checkpoint/resnet', help='checkpoint directory')
-    parser.add_argument('--arch', type=str, default='resnet18', help='model architecture')
+    parser.add_argument('--save_dir', type=str, default='checkpoint/vgg', help='checkpoint directory')
+    parser.add_argument('--arch', type=str, default='vgg16', help='model architecture')
     parser.add_argument('--learning_rate', type=float, default=0.001, help='learning rate')
     parser.add_argument('--batch_size', type=int, default=32, help='batch size')
     parser.add_argument('--epochs', type=int, default=50, help='number of epochs')
     parser.add_argument('--cuda',  type=bool, default=True, help='use cuda if available')
-    parser.add_argument('--plot_path', type=str, default='plot_resnet.png', help='plot path')
+    parser.add_argument('--plot', type=str, default='plot.png', help='plot path')
     args = parser.parse_args()
 
     print('Parameters:')
