@@ -1,0 +1,1 @@
+python test.py --data_dir /home/19aag9/ELEC475/Computer-Vision-Deep-Learning/Lab5/data --model_path /home/19aag9/ELEC475/Computer-Vision-Deep-Learning/Lab5/checkpoint/vgg/model_best.pth --arch vgg16 --batch_size 32 --cuda True --predictions_plot /home/19aag9/ELEC475/Computer-Vision-Deep-Learning/Lab5/results/predictions.png
