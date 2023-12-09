@@ -55,7 +55,7 @@ class PetDataset(Dataset):
 
         if self.transform is not None:
             image = self.transform(image)
-
+            
         new_size = (224, 224)  
         scale_x, scale_y = new_size[0] / original_size[0], new_size[1] / original_size[1]
         label = [label[0] * scale_x, label[1] * scale_y]

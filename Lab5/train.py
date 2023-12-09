@@ -10,6 +10,7 @@ from pet_dataset import PetDataset, create_transforms
 from util import plot_loss
 import argparse
 
+
 warnings.filterwarnings("ignore")
 
 def train(args):
@@ -46,6 +47,7 @@ def train(args):
         raise ValueError('Only VGG16 and ResNet18 are supported!')
 
     model = model.to(device)
+
     criterion = torch.nn.MSELoss()
     optim = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=args.learning_rate)
     scheduler = ReduceLROnPlateau(optim, 'min', patience=5, verbose=True)
