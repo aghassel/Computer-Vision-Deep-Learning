@@ -15,7 +15,7 @@ warnings.filterwarnings("ignore")
 
 def train(args):
 
-    # mean and std are generated from pet_dataset.py
+    # mean and std are generated from pet_dataset.py file
     train_mean = [0.4789, 0.4476, 0.3948]
     train_std = [0.2259, 0.2229, 0.2255]
     test_mean = [0.4885, 0.4544, 0.3947]
